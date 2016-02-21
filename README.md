@@ -14,3 +14,4 @@ Just clone into HOME location. Works well under Linix/Ubuntu and Windows
 * speed-up build using:
   * daemon to hung around, expecting next call
   * incubating **configure-on-demand** feature
+  * turn on incubating **parallel-build** feature
