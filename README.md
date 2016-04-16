@@ -8,7 +8,7 @@ Config files collection to speed-up new workstation setup
 ### Run custom components setup and configuration
 * setup custom PPA
 * update system
-* install **git**, **openjdk**, **gradle**
+* install **ngin**, **git**, **openjdk**, **gradle**
 * copy **git** and **gradle** configuration filesto system locations
 
 ### Git default configuration

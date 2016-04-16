@@ -1,7 +1,10 @@
 # Ignore everything at HOME
 *
-# gradle configuration
+# gradle configuration and stuff
 !.gradle/gradle.properties
+gradlew
 
 # git configuration
 !.gitconfig
+
+
