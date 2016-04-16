@@ -17,7 +17,7 @@ cp -Rfu home/.g* ~/
 cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
 sudo mkdir /var/www
 ln -s /var/www ~/Web
-sed -i -- 's/\/usr\/share\/nginx\/html/\/var\/www/g' default
+sudosed -i -- 's/\/usr\/share\/nginx\/html/\/var\/www/g' /etc/nginx/sites-available/default
 
 # clone any github repo rightaway
 git clone https://github.com/bearmug/config-common.git ~/config-common
