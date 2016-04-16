@@ -1,8 +1,0 @@
-# Ignore everything at HOME
-*
-
-# gradle configuration
-!.gradle/gradle.properties
-
-# git configuration
-!.gitconfig
