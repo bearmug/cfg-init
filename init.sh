@@ -11,9 +11,7 @@ sudo apt-get update -y
 sudo apt-get -y install git openjdk-8-jdk gradle-2.12
 
 # copy git and gradle configuration files to system locations
-cp -Rfu .gradle ~/
-cp -fu .gitignore ~/
-cp -fu .gitconfig ~/
+cp -Rfu home/.g* ~/
 
 # clone any github repo rightaway
 git clone https://github.com/bearmug/portfolio-bench.git
