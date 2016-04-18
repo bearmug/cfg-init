@@ -12,10 +12,12 @@ sudo apt-get -y install nginx git openjdk-8-jdk gradle-2.12
 
 # link nginx web-root to /var/www Apache location and ~/Web alias
 cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
-sudo mkdir /var/wwwt
+sudo mkdir /var/www
 sudo chmod 777 /var/www
 ln -s /var/www ~/Web
 sudosed -i -- 's/\/usr\/share\/nginx\/html/\/var\/www/g' /etc/nginx/sites-available/default
+service nginx restart
+
 
 # clone any github repo rightaway
 git clone https://github.com/bearmug/config-common.git ~/config-common
