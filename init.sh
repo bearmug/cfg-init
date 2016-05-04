@@ -31,6 +31,10 @@ sudo service xrdp restart
 # ========================================================================
 # install git, openjdk, gradle
 sudo apt-get -y install nginx git openjdk-8-jdk gradle-2.12
+# fix ccacerts Ubuntu issue
+sudo dpkg --purge --force-depends ca-certificates-java
+sudo apt-get install ca-certificates-java
+
 
 # link nginx web-root to /var/www Apache location and ~/Web alias
 sudo cp /etc/nginx/sites-available/default /etc/nginx/sites-available/default.bak
