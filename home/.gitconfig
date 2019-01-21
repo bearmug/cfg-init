@@ -1,6 +1,9 @@
 [user]
     email = git-user-email
     name = git-user-name
+
+[credential]
+    helper = cache
 	
 [push]
     default = simple
