@@ -11,6 +11,7 @@ Just run setup scripts for the tooling you need.
   * **git** as a default version control system
   * **docker-ce** + **docker-compose**
   * **gradle** as a build tool
+  * **micro** - tiny console editor with languages support
 * Development stacks
   * **JVM** JDK8 + JDK10 + switching toolkit
 
