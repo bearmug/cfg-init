@@ -1,6 +1,9 @@
 [user]
-	email = pavel.fadeev@gmail.com
-	name = bearmug
+    email = git-user-email
+    name = git-user-name
+
+[credential]
+    helper = cache
 	
 [push]
     default = simple
@@ -15,6 +18,7 @@
     ca = commit -a --verbose
     cm = commit -m
     cam = commit -a -m
+    camp = "!f() { git add -A && git commit -m \"$@\" && git push; }; f"
     m = commit --amend --verbose
 
     d = diff

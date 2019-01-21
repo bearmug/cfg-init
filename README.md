@@ -1,24 +1,33 @@
-# config-common
-Config files collection to speed-up new workstation setup
+# cfg-init
+Bootstrap configurations set to speed-up dev setup process.
 
-### Usage
-* **Case #1** Just clone into HOME location. Works well under Linix/Ubuntu and Windows
-* **Case #2** Under Linux clone to any place and run **init.sh**
+## Usage
+Just run setup scripts for the tooling you need.
 
-### Run custom components setup and configuration
-* setup custom PPA
-* update system
-* install **ngin**, **git**, **openjdk**, **gradle**
-* copy **git** and **gradle** configuration filesto system locations
+## Content
+* Tooling
+  * **zsh** and **oh-my-zsh** to use as a shell
+  * **tmux** as terminal multiplexor
+  * **git** as a default version control system
+  * **docker-ce** + **docker-compose**
+  * **gradle** as a build tool
+* Development stacks
+  * **JVM** JDK8 + JDK10 + switching toolkit
 
-### Git default configuration
+## Default configurations
+### Git defaults
 * located inside **.gitconfig** file
 * github user configuration
 * shortcuts/aliases introduction to reduce useless keyboard typing
 
-### Gradle default configuration
+### Gradle defaults
 * located under **.gradle/** folder
 * speed-up build using:
   * daemon to hung around, expecting next call
   * incubating **configure-on-demand** feature
   * turn on incubating **parallel-build** feature
+
+### JDK defaults
+* hasJDK8 and JDK11 under the hood
+* JDK11 choosen by default
+* switch could be done with **update-java-alternatives**
