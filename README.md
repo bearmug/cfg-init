@@ -2,20 +2,17 @@
 Bootstrap configurations set to speed-up dev setup process.
 
 ## Usage
-Just run init.sh and go through the dialog.
+Just run setup scripts for the tooling you need.
 
 ## Content
-* Environment tooling
-  * *zsh* and *oh-my-zsh* to use as a shell
-  * *micro* to use as a prefferred editor
-  * *tmux* as terminal multiplexor
-  * *git* as a default version control system
-* DEV toolings
-  * Docker
-    * docker-ce + docker-compose
-  * JVM
-    * JDK8 + JDK10 + switching toolkit
-    * gradle installation
+* Tooling
+  * **zsh** and **oh-my-zsh** to use as a shell
+  * **tmux** as terminal multiplexor
+  * **git** as a default version control system
+  * **docker-ce** + **docker-compose**
+  * **gradle** as a build tool
+* Development stacks
+  * **JVM** JDK8 + JDK10 + switching toolkit
 
 ## Default configurations
 ### Git defaults
@@ -33,4 +30,4 @@ Just run init.sh and go through the dialog.
 ### JDK defaults
 * hasJDK8 and JDK11 under the hood
 * JDK11 choosen by default
-* switch could be done with supplied scripts
+* switch could be done with **update-java-alternatives**
