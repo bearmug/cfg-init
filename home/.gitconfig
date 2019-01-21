@@ -1,6 +1,6 @@
 [user]
-	email = pavel.fadeev@gmail.com
-	name = bearmug
+    email = git-user-email
+    name = git-user-name
 	
 [push]
     default = simple

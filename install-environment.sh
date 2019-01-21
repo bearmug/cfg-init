@@ -1,5 +1,3 @@
-# upgrade system
-
 # tweak git
 
 # tweak shell
