@@ -9,5 +9,6 @@ gradlew
 
 # IDE files
 .idea/
+.gradle/
 
 
