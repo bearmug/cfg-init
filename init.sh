@@ -30,9 +30,9 @@ sudo service xrdp restart
 # toolchain setup
 # ========================================================================
 # install git, openjdk, gradle
-sudo apt-get -y install nginx git openjdk-8-jdk gradle-2.12
+sudo apt-get -y install nginx git openjdk-8-jdk openjdk-8-jdk gradle
 # alter java version
-sudo update-java-alternatives -s java-1.8.0-openjdk-amd64
+sudo update-java-alternatives -s java-1.11.0-openjdk-amd64
 # fix ccacerts Ubuntu issue
 sudo dpkg --purge --force-depends ca-certificates-java
 sudo apt-get install ca-certificates-java

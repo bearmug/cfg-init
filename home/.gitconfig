@@ -15,6 +15,7 @@
     ca = commit -a --verbose
     cm = commit -m
     cam = commit -a -m
+    camp = "!f() { git add -A && git commit -m \"$@\" && git push; }; f"
     m = commit --amend --verbose
 
     d = diff
