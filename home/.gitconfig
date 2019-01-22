@@ -3,7 +3,7 @@
     name = git-user-name
 
 [credential]
-    helper = cache
+    helper = store
 	
 [push]
     default = simple
