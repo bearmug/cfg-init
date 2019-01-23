@@ -3,7 +3,7 @@
 # ========================================================================
 # f.lux setup
 # ========================================================================
-sudo add-apt-repository ppa:nathan-renniewaldock/flux -y
+sudo add-apt-repository ppa:nathan-renniewaldock/flux
 sudo apt-get update
 sudo apt-get install fluxgui -y
 fluxgui &
