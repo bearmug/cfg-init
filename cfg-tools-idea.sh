@@ -8,5 +8,13 @@ sudo apt-get update
 sudo apt-get install intellij-idea-community -y
 sudo apt-get upgrade gradle -y
 
+# ========================================================================
+# propr fonts setup
+# ========================================================================
+curl -L https://github.com/hbin/top-programming-fonts/raw/master/install.sh | bash
+
+echo "Linux-like systems recommended fonts setup:"
+echo "Settings -> Editor -> Font -> Menlo"
+echo "Settings -> Appearance & Behavior -> Appearance -> Use custom font -> Noto Sans"
 
 echo "### IDEA installation passed OK"
