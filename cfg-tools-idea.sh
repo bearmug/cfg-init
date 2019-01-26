@@ -9,7 +9,7 @@ sudo apt-get install intellij-idea-community -y
 sudo apt-get upgrade gradle -y
 
 # ========================================================================
-# propr fonts setup
+# proper fonts setup
 # ========================================================================
 curl -L https://github.com/hbin/top-programming-fonts/raw/master/install.sh | bash
 
