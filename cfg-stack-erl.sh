@@ -1,18 +1,26 @@
 #!/bin/bash
 
 # ========================================================================
-# erlang setup
+# download and install kerl
 # ========================================================================
-sudo sh -c 'echo "deb https://packages.erlang-solutions.com/ubuntu xenial  contrib" >> /etc/apt/sources.list.d/erlang.list'
-wget https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
-sudo apt-key add erlang_solutions.asc
-sudo apt-get update
-sudo apt-get install erlang -y
-
-# ========================================================================
-# have erlang CLI history
-# ========================================================================
-echo "export ERL_FLAGS=\"-kernel shell_history enabled\"" >> ~/.zshrc
+mkdir -p ~/.bin
+cd ~/.bin
+curl -O https://raw.githubusercontent.com/kerl/kerl/master/kerl
+chmod a+x kerl
+echo "export PATH=$HOME/.bin:$PATH" >> ~/.zshrc
 source ~/.zshrc
 
-echo "### ERLANG installation passed OK"
+# ========================================================================
+# build OTP 21
+# ========================================================================
+sudo apt-get install -y libssl-dev automake autoconf libncurses5-dev
+kerl build 21.3
+kerl install 21.3 ~/kerl/21.3
+
+# ========================================================================
+# activate OTP 21 on logon
+# ========================================================================
+. /home/pavel/kerl/21.3/activate
+echo ". /home/pavel/kerl/21.3/activate" >> ~/.zshrc
+
+echo "### Kerl ERLANG installation passed OK"
