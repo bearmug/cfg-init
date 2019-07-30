@@ -1,11 +1,14 @@
 #!/bin/bash
 
 # ========================================================================
-# f.lux setup
+# plasma kubuntu desktop setup
 # ========================================================================
-sudo add-apt-repository ppa:nathan-renniewaldock/flux
-sudo apt-get update
-sudo apt-get install fluxgui -y
-fluxgui &
+sudo apt install tasksel
+sudo tasksel install kubuntu-desktop
+
+# ========================================================================
+# turn redshift on autostart
+# ========================================================================
+cp ./home/redshift.desktop ~/.config/autostart/redshift.desktop
 
 echo "### now your eyes going to feel better!"

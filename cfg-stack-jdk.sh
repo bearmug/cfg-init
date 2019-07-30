@@ -13,6 +13,7 @@ sudo apt-get install openjdk-8-jdk -y
 sudo apt-get install openjdk-11-jdk -y
 sudo apt-get install openjdk-12-jdk -y
 sudo apt-get install openjdk-13-jdk -y
+# ========================================================================
 
 # ========================================================================
 # manipulate by jdk versions
