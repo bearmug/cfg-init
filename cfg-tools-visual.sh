@@ -11,4 +11,19 @@ sudo tasksel install kubuntu-desktop
 # ========================================================================
 cp ./home/redshift.desktop ~/.config/autostart/redshift.desktop
 
-echo "### now your eyes going to feel better!"
+# ========================================================================
+# install multitouch gestures support
+# ========================================================================
+sudo gpasswd -a $USER input
+sudo apt install xdotool libinput-tools
+cd /tmp
+git clone http://github.com/bulletmark/libinput-gestures
+cd libinput-gestures
+sudo ./libinput-gestures-setup install
+
+cp home/libinput-gestures.conf ~/.config/libinput-gestures.conf
+
+libinput-gestures-setup start
+libinput-gestures-setup autostart
+
+echo "### visual enhancements are in place, please RESTART!"

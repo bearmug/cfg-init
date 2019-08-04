@@ -8,7 +8,8 @@ sudo apt-get -y install git
 # ========================================================================
 # copy git configuration files to system locations
 # ========================================================================
-cp -f ./home/.git* $HOME/
+cp -f ./home/.gitconfig $HOME/.gitconfig
+cp -f ./home/.gitignore-file $HOME/.gitignore
 
 # ========================================================================
 # alter username and email for git user
