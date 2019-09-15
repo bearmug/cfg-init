@@ -20,7 +20,7 @@ kerl install 21.3 ~/kerl/21.3
 # ========================================================================
 # activate OTP 21 on logon
 # ========================================================================
-. /home/pavel/kerl/21.3/activate
-echo ". /home/pavel/kerl/21.3/activate" >> ~/.zshrc
+. $HOME/kerl/21.3/activate
+echo ". $HOME/kerl/21.3/activate" >> ~/.zshrc
 
 echo "### Kerl ERLANG installation passed OK"
