@@ -19,6 +19,8 @@
     cm = commit -m
     cam = commit -a -m
     camp = "!f() { git add -A && git commit -m \"$@\" && git push; }; f"
+    campf = "!f() { git add -A && git commit -m \"$@\" && git push -f; }; f"
+    cane = "!f() { git add -A && git commit --amend --no-edit; }; f"
     m = commit --amend --verbose
 
     d = diff
