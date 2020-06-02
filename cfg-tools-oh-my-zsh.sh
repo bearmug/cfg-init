@@ -4,7 +4,7 @@
 # zsh setup
 # ========================================================================
 sudo apt-get update
-sudo apt-get install zsh -y
+sudo apt-get install zsh curl -y
 chsh -s $(which zsh)
 
 # ========================================================================
