@@ -32,3 +32,11 @@ Just run setup scripts for the tooling you need.
 * hasJDK8 and JDK11 under the hood
 * JDK11 choosen by default
 * switch could be done with **update-java-alternatives**
+
+### OMP agent defaults
+* located under **home/.omp/agent/**, applied with **cfg-tools-omp.sh**
+* tuned for minimum spend: compaction at 280k/200k tokens, token usage +
+  cache-miss markers visible, tool-result imaging on
+* local **headroom** MCP server for on-demand context compression
+  (`uv tool install --python 3.13 "headroom-ai[all]"`, served via stdio)
+* trimmed background reviewer (low thinking, 1 note per update)

@@ -1,0 +1,17 @@
+# OMP agent tuning: token-spend optimization only. No providers, no models.
+setupVersion: 2
+advisor:
+  maxNotesPerUpdate: 1
+compaction:
+  thresholdTokens: 280000
+  thresholdPercent: -1
+  keepRecentTokens: 20000
+  idleEnabled: true
+  idleThresholdTokens: 200000
+  idleTimeoutSeconds: 180
+  v2RetainedMessageBudget: 32000
+display:
+  showTokenUsage: true
+  cacheMissMarker: true
+snapcompact:
+  toolResults: true
