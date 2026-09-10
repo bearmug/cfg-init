@@ -1,0 +1,106 @@
+setupVersion: 2
+providers:
+  streamFirstEventTimeoutSeconds: 600
+  streamIdleTimeoutSeconds: 600
+  maxInFlightRequests:
+    llama.cpp: 1
+    ollama: 1
+modelRoles:
+  default: openai-codex/gpt-5.6-luna
+  smol: opencode-go/deepseek-v4-flash:high
+  slow: opencode-go/glm-5.3-flash:max
+  plan: opencode-go/glm-5.3-flash:high
+  advisor: opencode-go/glm-5.3-flash:low
+  task: opencode-go/deepseek-v4-flash:high
+  review: opencode-go/deepseek-v4-flash:high
+  tiny: opencode-go/deepseek-v4-flash:low
+advisor:
+  enabled: true
+  syncBacklog: "off"
+  maxNotesPerUpdate: 1
+task:
+  agentModelOverrides:
+    scout: opencode-go/deepseek-v4-flash:high
+    reviewer: opencode-go/deepseek-v4-flash:high
+    task: opencode-go/deepseek-v4-flash:high
+  showResolvedModelBadge: true
+  maxRuntimeMs: 600000
+defaultThinkingLevel: auto
+retry:
+  modelFallback: true
+  usageAwareFallback: true
+  usageReservePct: 10
+  fallbackChains:
+    default:
+      - opencode-go/deepseek-v4-flash
+      - opencode-go/gpt-5.6-luna
+      - opencode-go/glm-5.3-flash:high
+      - opencode-go/deepseek-v4-flash:high
+    smol:
+      - opencode-go/deepseek-v4-flash:high
+    slow:
+      - opencode-go/glm-5.3-flash:max
+    advisor:
+      - opencode-go/glm-5.3-flash:high
+    tiny:
+      - opencode-go/deepseek-v4-flash:low
+    task:
+      - opencode-go/deepseek-v4-flash:high
+    review:
+      - opencode-go/deepseek-v4-flash:high
+  includeSkills:
+    - "*:*"
+    - using-superpowers
+    - brainstorming
+    - systematic-debugging
+    - test-driven-development
+    - verification-before-completion
+    - writing-plans
+    - executing-plans
+    - subagent-driven-development
+    - dispatching-parallel-agents
+    - using-git-worktrees
+    - requesting-code-review
+    - receiving-code-review
+    - finishing-a-development-branch
+    - skill-development
+    - skill-creator
+    - agent-development
+    - command-development
+    - hook-development
+    - mcp-integration
+    - plugin-settings
+    - plugin-structure
+    - claude-md-improver
+    - claude-automation-recommender
+composer:
+  shape: box
+dev:
+  autoqaConsent: granted
+compaction:
+  thresholdTokens: 280000
+  thresholdPercent: -1
+  midTurnEnabled: true
+  keepRecentTokens: 20000
+  autoContinue: true
+  asyncEnabled: true
+  methodOrder:
+    - remote
+    - snapcompact
+    - handoff
+    - shake
+    - soft
+  remoteStreamingV2Enabled: true
+  idleEnabled: true
+  idleThresholdTokens: 200000
+  idleTimeoutSeconds: 180
+  v2RetainedMessageBudget: 32000
+  handoffSaveToDisk: true
+theme:
+  dark: titanium
+  light: titanium
+display:
+  showTokenUsage: true
+  cacheMissMarker: true
+snapcompact:
+  toolResults: true
