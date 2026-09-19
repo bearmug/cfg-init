@@ -1,25 +1,42 @@
 #!/bin/bash
+set -euo pipefail
 
-# ========================================================================
-# git setup
-# ========================================================================
-sudo apt-get -y install git
+# Git + starter config. Copies home/.gitconfig and home/.gitignore-file,
+# then fills the user placeholders. Env overrides beat prompts:
+#   GIT_USER_NAME="Jane" GIT_USER_EMAIL="jane@example.com" ./cfg-tools-git.sh
+# Pass `--no-prompt` for non-interactive runs (env must supply both values).
+# The copies back up any existing files with a timestamp suffix. Re-run safe.
 
-# ========================================================================
-# copy git configuration files to system locations
-# ========================================================================
-cp -f ./home/.gitconfig $HOME/.gitconfig
-cp -f ./home/.gitignore-file $HOME/.gitignore
+NO_PROMPT=0
+if [ "${1:-}" = "--no-prompt" ]; then
+	NO_PROMPT=1
+fi
 
-# ========================================================================
-# alter username and email for git user
-# ========================================================================
-echo "### please input git user name"
-read GIT_USER_NAME
-echo "please input gituser email"
-read GIT_USER_EMAIL
+sudo apt-get update
+sudo apt-get install -y git
 
-sed -i "s/git-user-name/${GIT_USER_NAME}/g" $HOME/.gitconfig
-sed -i "s/git-user-email/${GIT_USER_EMAIL}/g" $HOME/.gitconfig
+for f in .gitconfig .gitignore; do
+	if [ -e "$HOME/$f" ]; then
+		cp -f "$HOME/$f" "$HOME/$f.bak-$(date +%Y%m%d%H%M%S)"
+	fi
+done
+cp -f ./home/.gitconfig "$HOME/.gitconfig"
+cp -f ./home/.gitignore-file "$HOME/.gitignore"
+
+GIT_USER_NAME="${GIT_USER_NAME:-}"
+GIT_USER_EMAIL="${GIT_USER_EMAIL:-}"
+
+if [ -z "$GIT_USER_NAME" ] || [ -z "$GIT_USER_EMAIL" ]; then
+	if [ "$NO_PROMPT" = "1" ]; then
+		echo "GIT_USER_NAME and GIT_USER_EMAIL must be set with --no-prompt" >&2
+		exit 1
+	fi
+	read -r -p "git user name: " GIT_USER_NAME
+	read -r -p "git user email: " GIT_USER_EMAIL
+fi
+
+# git-config handles escaping; no sed placeholder surgery
+git config --global user.name "$GIT_USER_NAME"
+git config --global user.email "$GIT_USER_EMAIL"
 
 echo "### GIT installation passed OK"
