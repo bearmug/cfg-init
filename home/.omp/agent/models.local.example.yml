@@ -1,0 +1,61 @@
+# Optional local-model registry template.
+# Copy into your OMP profile only after replacing the example model IDs.
+# All endpoints are loopback; no credentials belong in this file.
+providers:
+  local-gate:
+    baseUrl: http://127.0.0.1:8090/v1
+    auth: none
+    api: openai-completions
+    models:
+      - id: local-gate-model
+        name: Local model through gate
+        contextWindow: 65536
+        maxTokens: 8192
+        reasoning: true
+        input: [text]
+        supportsTools: true
+        cost:
+          input: 0
+          output: 0
+          cacheRead: 0
+          cacheWrite: 0
+  llama.cpp:
+    baseUrl: http://127.0.0.1:8005/v1
+    auth: none
+    api: openai-completions
+    models:
+      - id: llama-model
+        name: Local llama.cpp model
+        contextWindow: 65536
+        maxTokens: 8192
+        reasoning: false
+        input: [text]
+        supportsTools: true
+        cost:
+          input: 0
+          output: 0
+          cacheRead: 0
+          cacheWrite: 0
+  mlx:
+    baseUrl: http://127.0.0.1:8010/v1
+    auth: none
+    api: openai-completions
+    models:
+      - id: mlx-model
+        name: Local MLX model
+        contextWindow: 65536
+        maxTokens: 8192
+        reasoning: true
+        input: [text]
+        supportsTools: true
+        cost:
+          input: 0
+          output: 0
+          cacheRead: 0
+          cacheWrite: 0
+  ollama:
+    modelOverrides:
+      local-model:
+        contextWindow: 65536
+        maxTokens: 8192
+        reasoning: true
