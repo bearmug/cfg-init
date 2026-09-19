@@ -1,45 +1,36 @@
 #!/bin/bash
+set -euo pipefail
 
-# ========================================================================
-# purge packages and install docker ce
-# ========================================================================
-sudo apt-get remove docker docker-engine docker.io containerd runc -y
+# Docker CE + Compose plugin on Debian/Ubuntu.
+# Recipe (2026-09): keyring under /etc/apt/keyrings with signed-by, arch from
+# dpkg, codename from /etc/os-release; installs the Compose *plugin*
+# (`docker compose`), not the standalone v2.23 binary. Replaces the old
+# apt-key + hardcoded amd64 recipe.
+# Re-run safe. Re-logon after first run so the `docker` group applies.
+
 sudo apt-get update
-# https://docs.docker.com/install/linux/docker-ce/ubuntu/
-sudo apt-get install \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg-agent \
-    software-properties-common -y
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
+sudo apt-get install -y ca-certificates curl gnupg
+
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+	| sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# shellcheck disable=SC1091
+CODENAME="$(. /etc/os-release && echo "${UBUNTU_CODENAME:-${VERSION_CODENAME:-stable}}")"
+ARCH="$(dpkg --print-architecture)"
+echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable" \
+	| sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
 sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli containerd.io -y
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+sudo groupadd -f docker
+sudo usermod -aG docker "$USER"
+sudo systemctl enable --now docker
 
-# ========================================================================
-# install docker-compose
-# ========================================================================
-# https://docs.docker.com/compose/install/
-sudo curl -L https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# ========================================================================
-# create docker usergroup and configure it
-# ========================================================================
-sudo groupadd docker
-sudo usermod -aG docker $USER
-
-# ========================================================================
-# start docker on system boot
-# ========================================================================
-sudo systemctl enable docker
+docker --version
+docker compose version
 
 echo "### DOCKER installation passed OK"
-
-echo "please re-logon to configure docker running without sudo"
-echo "PLEASE RELOGON!!!"
+echo "Re-logon so the docker group applies (newgrp docker works in a pinch)."
