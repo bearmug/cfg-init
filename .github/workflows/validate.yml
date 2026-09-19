@@ -1,0 +1,30 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  shell-and-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check shell syntax
+        run: for script in cfg-*.sh; do bash -n "$script"; done
+      - name: Check model gate JavaScript
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check home/.local/share/model-gate/model-gate-proxy.mjs
+      - name: Reject committed secret material
+        shell: bash
+        run: |
+          if git grep -nE 'BEGIN (RSA |OPENSSH |EC |DSA )?PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}' -- .; then
+            echo "Potential credential material found in tracked files" >&2
+            exit 1
+          fi
+      - name: Check patch whitespace
+        run: git diff --check

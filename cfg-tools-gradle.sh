@@ -15,7 +15,11 @@ fi
 # shellcheck disable=SC1091
 source "$HOME/.sdkman/bin/sdkman-init.sh"
 
-sdk install gradle || true
+if sdk current gradle >/dev/null 2>&1; then
+	echo "Gradle is already installed through SDKMAN"
+else
+	sdk install gradle
+fi
 gradle --version
 
 mkdir -p "$HOME/.gradle"

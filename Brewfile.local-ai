@@ -1,0 +1,3 @@
+# Optional local inference backends. This does not download model weights.
+brew "ollama"
+brew "llama.cpp"
