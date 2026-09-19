@@ -40,3 +40,11 @@ Just run setup scripts for the tooling you need.
 * local **headroom** MCP server for on-demand context compression
   (`uv tool install --python 3.13 "headroom-ai[all]"`, served via stdio)
 * trimmed background reviewer (low thinking, 1 note per update)
+
+### Optional local model gate
+* `cfg-tools-model-gate.sh` installs a small Bun proxy at `~/.local/share/model-gate/`.
+* It is model-agnostic and forwards OpenAI-compatible `/v1` requests to `127.0.0.1:8080` by default.
+* Set `MODEL_GATE_UPSTREAM`, `MODEL_GATE_PORT`, and `MODEL_GATE_LIMIT` for another local backend.
+* It rejects immediately with HTTP 503 when macOS Low Power Mode is active or the backend is saturated; this lets OMP use its configured fallback without queueing.
+* Bonsai 2 is the tested example/default model: subagents use it locally, with GPT-5.6 Luna as spillover.
+* Start the installed proxy under a process supervisor (for example OMP `hub`), not as an unmanaged background shell.
