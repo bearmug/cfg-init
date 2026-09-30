@@ -40,7 +40,8 @@ clobbers.
 
 ## OMP agent defaults
 
-* located under **home/.omp/agent/** and applied with **cfg-tools-omp.sh**
+* located under **home/.omp/agent/** and applied with **cfg-tools-omp.sh**:
+  per-key OMP settings plus one Python merge pass preserve unrelated user config.
 * configures compaction at 80%, retaining the 200k-token / 180-second idle
   behavior, token usage and cache-miss markers, and snapcompact's auto shape,
   no system prompt, and tool results
