@@ -12,7 +12,7 @@ Debian/Ubuntu-first; macOS notes where the recipe differs.
 | `cfg-tools-gradle.sh` | Gradle via SDKMAN + daemon/parallel config | version switches via `sdk`; copies `home/.gradle/gradle.properties` |
 | `cfg-tools-tmux.sh` | tmux + `.tmux.conf` + TPM plugin install | installs TPM (previously missing), then plugins |
 | `cfg-tools-oh-my-zsh.sh` | zsh + Oh My Zsh + 2 plugins | canonical `ohmyzsh/ohmyzsh` URL, unattended, idempotent plugin list |
-| `cfg-tools-omp.sh` | OMP spend tuning + headroom MCP | per-key `omp config set`, merges `mcp.json` |
+| `cfg-tools-omp.sh` | OMP native judge, compaction, LSP + headroom MCP | merge-safe configuration and delegation preprompt |
 | `cfg-tools-model-gate.sh` | optional model-agnostic local gate | see below |
 
 Run from the repo root (`./cfg-tools-*.sh` resolve their `home/` payloads
@@ -35,14 +35,54 @@ clobbers.
 * `home/.gitignore-file` — home-dir oriented ignore starter.
 * `home/.gradle/gradle.properties` — daemon + parallel + configure-on-demand.
 * `home/.tmux.conf` — `C-a` prefix, Alt-arrow navigation, TPM + sensible/solarized.
-* `home/.omp/agent/` — spend-tuned `config.yml` mirror plus headroom `mcp.json`.
+* `home/.omp/agent/` — OMP `config.yml`, delegation `APPEND_SYSTEM.md`,
+  TypeScript `lsp.json`, and headroom `mcp.json`.
 
 ## OMP agent defaults
 
-* Applied with `cfg-tools-omp.sh`; keys mirror `home/.omp/agent/config.yml`.
-* Minimum spend: compaction at 280k/200k tokens, usage + cache-miss markers,
-  tool-result imaging on.
-* Headroom MCP (`uv tool install --python 3.13 "headroom-ai[all]"`, stdio).
+* located under **home/.omp/agent/** and applied with **cfg-tools-omp.sh**:
+  per-key OMP settings plus one Python merge pass preserve unrelated user config.
+* configures compaction at 80%, retaining the 200k-token / 180-second idle
+  behavior, token usage and cache-miss markers, and snapcompact's auto shape,
+  no system prompt, and tool results
+* selects the native `typesafe/jev-latest` judge with the paid
+  `opencode-zen-jev/jev-1.13` retry fallback; model authentication/provider
+  credentials must already be configured. Provisioning does not download
+  models. The paid fallback is used to avoid treating uncalibrated Luna
+  prompted-judge confidence as authoritative.
+* enables task LSP and TypeScript server support (`typescript` and
+  `typescript-language-server@6.0.1` installed via Bun); `home/.omp/agent/lsp.json`
+  merges the named server into existing per-user server configuration.
+* provisions the delegation policy from `home/.omp/agent/APPEND_SYSTEM.md`:
+  benefit-based delegation, main-owned orchestration, bounded worker briefs,
+  capability/cost-aware selection, independent slices dispatched together,
+  and evidence-backed acceptance. Replaces only the `## Delegation policy`
+  section; preserves unrelated preprompt instructions and does not duplicate
+  the section on re-runs.
+* requires `omp`, Bun, and `uv`; the script installs `headroom-ai[all]` with
+  Python 3.13 using uv. Add Bun's global binary directory to `PATH` before
+  running the script.
+* Native OMP experimental context management remains disabled. Global OMP
+  notes remain disabled.
+
+## cmux link routing
+
+For external-only links, run `cmux disable-browser` and merge these preferences
+into `~/.config/cmux/cmux.json` (back up the existing file; preserve other keys):
+
+```json
+{
+  "browser": {
+    "openTerminalLinksInCmuxBrowser": false,
+    "interceptTerminalOpenCommandInCmuxBrowser": false
+  }
+}
+```
+
+Run `cmux reload-config` afterward. External links use the macOS default browser;
+select Google Chrome as the default for both HTTP and HTTPS for Chrome-only
+routing. On the current workstation, both already use `com.google.chrome`;
+an actual `cmux open` link was observed in Chrome with no internal browser surface.
 
 ## Optional local model gate
 
