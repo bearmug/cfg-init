@@ -1,0 +1,53 @@
+{
+  "limitProbes": [
+    {
+      "name": "laya",
+      "status": 200,
+      "responseModel": "laya-rl-agent",
+      "routing": {
+        "model": "multilingual",
+        "repo": "convaiinnovations/laya/multilingual",
+        "reason": "explicit model='multilingual'",
+        "detection": null,
+        "workflow": null
+      },
+      "usage": {
+        "input_tokens": 128,
+        "output_tokens": 0,
+        "state_tokens": 3607,
+        "state_tokens_dropped": 3517,
+        "truncated": true,
+        "truncated_questions": [
+          "supported"
+        ]
+      },
+      "answers": {
+        "supported": {
+          "type": "noul",
+          "noul": 0.0084,
+          "confidence": 0.9916,
+          "answer_confidence": 0.9916,
+          "action": {
+            "act_probability": 1
+          }
+        }
+      }
+    },
+    {
+      "name": "decider-q4",
+      "status": 200,
+      "responseModel": "decider-2b-v11",
+      "usage": {
+        "input_tokens": 158,
+        "output_tokens": 0
+      },
+      "answers": {
+        "supported": {
+          "type": "noul",
+          "noul": 0.216
+        }
+      }
+    }
+  ],
+  "wrongModelStatus": 400
+}

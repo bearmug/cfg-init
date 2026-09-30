@@ -1,0 +1,35 @@
+{
+  "date": "2026-09-30",
+  "laya": {
+    "package": "laya==0.3.22",
+    "torch": "2.14.0",
+    "repository": "convaiinnovations/laya",
+    "revision": "55cf4c4ebb4ebe31b2550e8bdf3bd21b99753851",
+    "subfolder": "multilingual",
+    "requestModel": "multilingual",
+    "responseModel": "laya-rl-agent",
+    "device": "mps",
+    "maxLen": 8192,
+    "rssKiB": 1034896
+  },
+  "deciderQ4": {
+    "package": "decider-ai==1.8.0",
+    "llamaCppPython": "0.3.35",
+    "repository": "Mapika/decider-2b-GGUF",
+    "revision": "ff2e5e687327eda9ac34e9a3ca84d3f400672c87",
+    "file": "decider-2b-v11-Q4_K_M.gguf",
+    "responseModel": "decider-2b-v11",
+    "backend": "Metal; Apple M3 Pro; all layers offloaded",
+    "context": 8192,
+    "rssKiB": 2180112
+  },
+  "decider08": {
+    "repository": "Mapika/decider-0.8b",
+    "revision": "a0a01d6f8135298f400a8c856b355793012ae971",
+    "responseModel": "decider-0.8b-v1",
+    "backend": "MPS BF16, not Q4"
+  },
+  "coldStartMeasured": false,
+  "energyMeasured": false,
+  "fixturesSha256": "cb38c43f926a884d1c4de7067268b46af282054ccb7178989c61c9d4f9d6d109"
+}

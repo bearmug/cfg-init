@@ -1,0 +1,413 @@
+{
+  "checks": [
+    {
+      "fault": "401",
+      "requests": [
+        "primary-401",
+        "fallback-401"
+      ],
+      "elapsedMs": 17,
+      "fallbackAnswered": true,
+      "result": {
+        "api": "typesafe",
+        "provider": "omp-failover-fixture",
+        "model": "fallback-401",
+        "answers": {
+          "destination": {
+            "type": "choice",
+            "choice": "safe",
+            "confidence": 0.9,
+            "probabilities": {
+              "safe": 0.9,
+              "unsafe": 0.1
+            }
+          }
+        },
+        "usage": {
+          "input": 20,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 20,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        }
+      },
+      "attempts": [
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "primary-401",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "errorMessage": "omp-failover-fixture/primary-401 API error (401): {\"error\":{\"message\":\"Injected HTTP 401\"}}"
+        },
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "fallback-401",
+          "usage": {
+            "input": 20,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 20,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop"
+        }
+      ]
+    },
+    {
+      "fault": "403",
+      "requests": [
+        "primary-403",
+        "fallback-403"
+      ],
+      "elapsedMs": 11,
+      "fallbackAnswered": true,
+      "result": {
+        "api": "typesafe",
+        "provider": "omp-failover-fixture",
+        "model": "fallback-403",
+        "answers": {
+          "destination": {
+            "type": "choice",
+            "choice": "safe",
+            "confidence": 0.9,
+            "probabilities": {
+              "safe": 0.9,
+              "unsafe": 0.1
+            }
+          }
+        },
+        "usage": {
+          "input": 20,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 20,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        }
+      },
+      "attempts": [
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "primary-403",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "errorMessage": "omp-failover-fixture/primary-403 API error (403): {\"error\":{\"message\":\"Injected HTTP 403\"}}"
+        },
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "fallback-403",
+          "usage": {
+            "input": 20,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 20,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop"
+        }
+      ]
+    },
+    {
+      "fault": "429",
+      "requests": [
+        "primary-429",
+        "primary-429",
+        "primary-429",
+        "fallback-429"
+      ],
+      "elapsedMs": 1521,
+      "fallbackAnswered": true,
+      "result": {
+        "api": "typesafe",
+        "provider": "omp-failover-fixture",
+        "model": "fallback-429",
+        "answers": {
+          "destination": {
+            "type": "choice",
+            "choice": "safe",
+            "confidence": 0.9,
+            "probabilities": {
+              "safe": 0.9,
+              "unsafe": 0.1
+            }
+          }
+        },
+        "usage": {
+          "input": 20,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 20,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        }
+      },
+      "attempts": [
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "primary-429",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "errorMessage": "omp-failover-fixture/primary-429 API error (429): {\"error\":{\"message\":\"Injected HTTP 429\"}}"
+        },
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "fallback-429",
+          "usage": {
+            "input": 20,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 20,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop"
+        }
+      ]
+    },
+    {
+      "fault": "503",
+      "requests": [
+        "primary-503",
+        "primary-503",
+        "primary-503",
+        "fallback-503"
+      ],
+      "elapsedMs": 1517,
+      "fallbackAnswered": true,
+      "result": {
+        "api": "typesafe",
+        "provider": "omp-failover-fixture",
+        "model": "fallback-503",
+        "answers": {
+          "destination": {
+            "type": "choice",
+            "choice": "safe",
+            "confidence": 0.9,
+            "probabilities": {
+              "safe": 0.9,
+              "unsafe": 0.1
+            }
+          }
+        },
+        "usage": {
+          "input": 20,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 20,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        }
+      },
+      "attempts": [
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "primary-503",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "errorMessage": "omp-failover-fixture/primary-503 API error (503): {\"error\":{\"message\":\"Injected HTTP 503\"}}"
+        },
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "fallback-503",
+          "usage": {
+            "input": 20,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 20,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop"
+        }
+      ]
+    },
+    {
+      "fault": "timeout",
+      "requests": [
+        "primary-timeout",
+        "primary-timeout",
+        "primary-timeout"
+      ],
+      "elapsedMs": 31522,
+      "fallbackAnswered": false,
+      "error": "TimeoutError: The operation timed out.",
+      "attempts": [
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "primary-timeout",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "aborted",
+          "errorMessage": "The operation timed out."
+        }
+      ]
+    },
+    {
+      "fault": "abort",
+      "requests": [
+        "primary-abort"
+      ],
+      "elapsedMs": 102,
+      "fallbackAnswered": false,
+      "error": "Error: fixture caller abort",
+      "attempts": [
+        {
+          "role": "typesafe",
+          "api": "typesafe",
+          "provider": "omp-failover-fixture",
+          "model": "primary-abort",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "error",
+          "errorMessage": "fixture caller abort"
+        }
+      ]
+    }
+  ],
+  "productionSettingsUnchanged": true
+}

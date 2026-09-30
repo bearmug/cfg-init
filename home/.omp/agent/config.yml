@@ -1,10 +1,11 @@
-# OMP agent tuning: token-spend optimization only. No providers, no models.
+# OMP agent tuning: compaction, native judge, task LSP, and recap.
 setupVersion: 2
 advisor:
   maxNotesPerUpdate: 1
 compaction:
-  thresholdTokens: 280000
-  thresholdPercent: -1
+  thresholdTokens: -1
+  thresholdPercent: 80
+  experimentalContextManagement: false
   keepRecentTokens: 20000
   idleEnabled: true
   idleThresholdTokens: 200000
@@ -14,4 +15,17 @@ display:
   showTokenUsage: true
   cacheMissMarker: true
 snapcompact:
+  shape: auto
+  systemPrompt: none
   toolResults: true
+task:
+  enableLsp: true
+  maxRecursionDepth: 1
+recap:
+  idleSeconds: 600
+modelRoles:
+  judge: typesafe/jev-latest
+retry:
+  fallbackChains:
+    judge:
+      - opencode-zen-jev/jev-1.13

@@ -1,2 +1,9 @@
 .idea/
 .gradle/
+
+# Local Python/runtime and shadow-trial artifacts.
+__pycache__/
+*.py[cod]
+experiments/omp/.venv/
+experiments/omp/hf/
+experiments/omp/telemetry/

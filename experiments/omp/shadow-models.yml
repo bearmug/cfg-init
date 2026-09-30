@@ -1,0 +1,5 @@
+# Explicit temporary overlay; merge into models.yml, never replace that file.
+# The proxy always returns remote Jev, irrespective of local confidence.
+providers:
+  typesafe:
+    baseUrl: http://127.0.0.1:18744

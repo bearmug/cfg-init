@@ -1,0 +1,2877 @@
+{
+  "fixtureCount": 58,
+  "questionCount": 98,
+  "methodology": "Fixed manual synthetic held-out fixtures; no training/tuning. Decision accuracy: choice exact, noul >=0.5, score rounded to nearest level. Calibration is diagnostic on this small sample, not production validation. Multiclass Brier is summed squared error; binary Brier is squared yes-probability error. ECE uses predicted class probability, not the API confidence field. Latency protocols must be compared separately.",
+  "summaries": [
+    {
+      "selector": "typesafe/jev-latest",
+      "native": true,
+      "fixtures": 58,
+      "received": 58,
+      "questions": 98,
+      "correct": 87,
+      "accuracy": 0.8877551020408163,
+      "schemaFailures": 0,
+      "requestErrors": [],
+      "domains": {
+        "routing": {
+          "correct": 16,
+          "total": 16
+        },
+        "relevance": {
+          "correct": 25,
+          "total": 32
+        },
+        "support": {
+          "correct": 14,
+          "total": 14
+        },
+        "action": {
+          "correct": 32,
+          "total": 36
+        }
+      },
+      "macroF1": {
+        "routing": 1,
+        "action": 0.8388888888888888
+      },
+      "latencyMs": {
+        "p50": 264,
+        "p95": 352
+      },
+      "reportedCostUsd": 0.0014277060000000002,
+      "calibration": {
+        "ece10Bins": 0.039142857142857077,
+        "brier": {
+          "choice": 0.08494285714285714,
+          "noul": 0.08502857142857143,
+          "score": 0.24442857142857147
+        },
+        "decisionCoverage": [
+          {
+            "threshold": 0.5,
+            "coverage": 1,
+            "accuracy": 0.9142857142857143
+          },
+          {
+            "threshold": 0.7,
+            "coverage": 0.8285714285714286,
+            "accuracy": 0.9655172413793104
+          },
+          {
+            "threshold": 0.9,
+            "coverage": 0.6285714285714286,
+            "accuracy": 0.9772727272727273
+          }
+        ]
+      },
+      "scoreMeanAbsoluteError": 0.21357142857142855,
+      "truncatedStates": [],
+      "misses": [
+        {
+          "id": "relevance-08",
+          "question": "grade",
+          "expected": 1,
+          "predicted": 2,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.59,
+            "confidence": 0.38,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.01,
+              "1": 0.39,
+              "2": 0.6
+            }
+          },
+          "tags": [
+            "prerequisite-only"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-10",
+          "question": "grade",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.59,
+            "confidence": 0.12,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.48,
+              "1": 0.44,
+              "2": 0.08
+            }
+          },
+          "tags": [
+            "wrong-setting"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-12",
+          "question": "grade",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.16,
+            "confidence": 0.77,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.85,
+              "1": 0.15,
+              "2": 0
+            }
+          },
+          "tags": [
+            "topic-only"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-13",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.45
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-14",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.46
+          },
+          "tags": [
+            "de"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-16",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.18
+          },
+          "tags": [
+            "paraphrase"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-16",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.96,
+            "confidence": 0.56,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.17,
+              "1": 0.7,
+              "2": 0.13
+            }
+          },
+          "tags": [
+            "paraphrase"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-09",
+          "question": "effect",
+          "expected": "local",
+          "predicted": "remote",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "remote",
+            "confidence": 0.37,
+            "probabilities": {
+              "destructive": 0.01,
+              "remote": 0.53,
+              "read": 0,
+              "local": 0.46
+            }
+          },
+          "tags": [
+            "isolation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-09",
+          "question": "remoteWrite",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.69
+          },
+          "tags": [
+            "isolation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "effect",
+          "expected": "local",
+          "predicted": "read",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "read",
+            "confidence": 0.93,
+            "probabilities": {
+              "local": 0.05,
+              "destructive": 0,
+              "remote": 0,
+              "read": 0.95
+            }
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0,
+            "confidence": 1,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 1,
+              "1": 0,
+              "2": 0
+            }
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "selector": "openai-codex/gpt-6-luna",
+      "native": false,
+      "fixtures": 58,
+      "received": 58,
+      "questions": 98,
+      "correct": 90,
+      "accuracy": 0.9183673469387755,
+      "schemaFailures": 0,
+      "requestErrors": [],
+      "domains": {
+        "routing": {
+          "correct": 16,
+          "total": 16
+        },
+        "relevance": {
+          "correct": 30,
+          "total": 32
+        },
+        "support": {
+          "correct": 11,
+          "total": 14
+        },
+        "action": {
+          "correct": 33,
+          "total": 36
+        }
+      },
+      "macroF1": {
+        "routing": 1,
+        "action": 0.9365079365079365
+      },
+      "latencyMs": {
+        "p50": 1990,
+        "p95": 3133
+      },
+      "reportedCostUsd": 0.0033561999999999997,
+      "calibration": {
+        "unavailable": "Prompted adapter returns synthetic one-hot probabilities, not calibrated confidence"
+      },
+      "scoreMeanAbsoluteError": 0.10714285714285714,
+      "truncatedStates": [],
+      "misses": [
+        {
+          "id": "relevance-10",
+          "question": "grade",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1,
+            "probabilities": {
+              "0": 0,
+              "1": 1,
+              "2": 0
+            },
+            "confidence": 1
+          },
+          "tags": [
+            "wrong-setting"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-12",
+          "question": "grade",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0,
+            "probabilities": {
+              "0": 1,
+              "1": 0,
+              "2": 0
+            },
+            "confidence": 1
+          },
+          "tags": [
+            "topic-only"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-01",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0
+          },
+          "tags": [
+            "exact"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-05",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0
+          },
+          "tags": [
+            "negation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-10",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0
+          },
+          "tags": [
+            "version"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-08",
+          "question": "remoteWrite",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 1
+          },
+          "tags": [
+            "data-loss"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "effect",
+          "expected": "local",
+          "predicted": "read",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "read",
+            "probabilities": {
+              "read": 1,
+              "local": 0,
+              "remote": 0,
+              "destructive": 0
+            },
+            "confidence": 1
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0,
+            "probabilities": {
+              "0": 1,
+              "1": 0,
+              "2": 0
+            },
+            "confidence": 1
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "selector": "local-laya/multilingual",
+      "native": true,
+      "fixtures": 58,
+      "received": 58,
+      "questions": 98,
+      "correct": 52,
+      "accuracy": 0.5306122448979592,
+      "schemaFailures": 0,
+      "requestErrors": [],
+      "domains": {
+        "routing": {
+          "correct": 13,
+          "total": 16
+        },
+        "relevance": {
+          "correct": 16,
+          "total": 32
+        },
+        "support": {
+          "correct": 7,
+          "total": 14
+        },
+        "action": {
+          "correct": 16,
+          "total": 36
+        }
+      },
+      "macroF1": {
+        "routing": 0.8246753246753247,
+        "action": 0.5030303030303029
+      },
+      "latencyMs": {
+        "p50": 23.546,
+        "p95": 100.373
+      },
+      "reportedCostUsd": null,
+      "calibration": {
+        "ece10Bins": 0.2574857142857142,
+        "brier": {
+          "choice": 0.48114701678571425,
+          "noul": 0.3531297519047619,
+          "score": 0.7278604578571428
+        },
+        "decisionCoverage": [
+          {
+            "threshold": 0.5,
+            "coverage": 0.9571428571428572,
+            "accuracy": 0.6119402985074627
+          },
+          {
+            "threshold": 0.7,
+            "coverage": 0.8142857142857143,
+            "accuracy": 0.5964912280701754
+          },
+          {
+            "threshold": 0.9,
+            "coverage": 0.37142857142857144,
+            "accuracy": 0.7307692307692307
+          }
+        ]
+      },
+      "scoreMeanAbsoluteError": 0.6784607142857143,
+      "truncatedStates": [],
+      "misses": [
+        {
+          "id": "routing-01",
+          "question": "route",
+          "expected": "lookup",
+          "predicted": "edit",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "edit",
+            "probabilities": {
+              "lookup": 0.1262,
+              "edit": 0.8005,
+              "review": 0.0351,
+              "advice": 0.0381
+            },
+            "confidence": 0.5083,
+            "answer_confidence": 0.8005,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "read-only"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "routing-12",
+          "question": "route",
+          "expected": "advice",
+          "predicted": "edit",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "edit",
+            "probabilities": {
+              "lookup": 0.0088,
+              "edit": 0.774,
+              "review": 0.0073,
+              "advice": 0.2099
+            },
+            "confidence": 0.5645,
+            "answer_confidence": 0.774,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "plan-only"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "routing-15",
+          "question": "route",
+          "expected": "review",
+          "predicted": "edit",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "edit",
+            "probabilities": {
+              "lookup": 0.0636,
+              "edit": 0.5354,
+              "review": 0.3554,
+              "advice": 0.0456
+            },
+            "confidence": 0.2656,
+            "answer_confidence": 0.5354,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "de"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-01",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.0539,
+            "confidence": 0.9461,
+            "answer_confidence": 0.9461,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "exact"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-01",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.1353,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.1126,
+              "1": 0.6396,
+              "2": 0.2479
+            },
+            "confidence": 0.2013,
+            "answer_confidence": 0.6396,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "exact"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-02",
+          "question": "grade",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.7073,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.3988,
+              "1": 0.495,
+              "2": 0.1062
+            },
+            "confidence": 0.1327,
+            "answer_confidence": 0.495,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "unrelated"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-06",
+          "question": "grade",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.863,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.3948,
+              "1": 0.3474,
+              "2": 0.2578
+            },
+            "confidence": 0.0136,
+            "answer_confidence": 0.3948,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "unrelated"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-07",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.4523,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.0296,
+              "1": 0.4886,
+              "2": 0.4818
+            },
+            "confidence": 0.2665,
+            "answer_confidence": 0.4886,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "exact"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-09",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.0703,
+            "confidence": 0.9297,
+            "answer_confidence": 0.9297,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "preservation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-09",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.4975,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.686,
+              "1": 0.1306,
+              "2": 0.1835
+            },
+            "confidence": 0.2395,
+            "answer_confidence": 0.686,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "preservation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-11",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.0422,
+            "confidence": 0.9578,
+            "answer_confidence": 0.9578,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "semantic"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-11",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.7832,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.4221,
+              "1": 0.3725,
+              "2": 0.2054
+            },
+            "confidence": 0.0379,
+            "answer_confidence": 0.4221,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "semantic"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-12",
+          "question": "grade",
+          "expected": 1,
+          "predicted": 2,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.6358,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.079,
+              "1": 0.2061,
+              "2": 0.7148
+            },
+            "confidence": 0.3027,
+            "answer_confidence": 0.7148,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "topic-only"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-13",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.1113,
+            "confidence": 0.8887,
+            "answer_confidence": 0.8887,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-13",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.1963,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.2033,
+              "1": 0.3972,
+              "2": 0.3995
+            },
+            "confidence": 0.0377,
+            "answer_confidence": 0.3995,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-14",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.1336,
+            "confidence": 0.8664,
+            "answer_confidence": 0.8664,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "de"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-14",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.3468,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.0521,
+              "1": 0.549,
+              "2": 0.3989
+            },
+            "confidence": 0.2265,
+            "answer_confidence": 0.549,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "de"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-16",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.0133,
+            "confidence": 0.9867,
+            "answer_confidence": 0.9867,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "paraphrase"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-16",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.4301,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.118,
+              "1": 0.334,
+              "2": 0.5481
+            },
+            "confidence": 0.1371,
+            "answer_confidence": 0.5481,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "paraphrase"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-03",
+          "question": "supported",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.7567,
+            "confidence": 0.7567,
+            "answer_confidence": 0.7567,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "configured-not-tested"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-08",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.1158,
+            "confidence": 0.8842,
+            "answer_confidence": 0.8842,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "preservation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-10",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.0167,
+            "confidence": 0.9833,
+            "answer_confidence": 0.9833,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "version"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-11",
+          "question": "supported",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.7019,
+            "confidence": 0.7019,
+            "answer_confidence": 0.7019,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "ru",
+            "scope"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-12",
+          "question": "supported",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.727,
+            "confidence": 0.727,
+            "answer_confidence": 0.727,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "embedded-instruction"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-01",
+          "question": "effect",
+          "expected": "read",
+          "predicted": "local",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "local",
+            "probabilities": {
+              "read": 0.0689,
+              "local": 0.7234,
+              "remote": 0.0757,
+              "destructive": 0.1321
+            },
+            "confidence": 0.3643,
+            "answer_confidence": 0.7234,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "remote-read"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-01",
+          "question": "remoteWrite",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.8941,
+            "confidence": 0.8941,
+            "answer_confidence": 0.8941,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "remote-read"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-01",
+          "question": "risk",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.1605,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.1428,
+              "1": 0.554,
+              "2": 0.3032
+            },
+            "confidence": 0.1198,
+            "answer_confidence": 0.554,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "remote-read"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-02",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 2,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.7442,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.0152,
+              "1": 0.2255,
+              "2": 0.7593
+            },
+            "confidence": 0.4462,
+            "answer_confidence": 0.7593,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "local-write"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-03",
+          "question": "effect",
+          "expected": "remote",
+          "predicted": "local",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "local",
+            "probabilities": {
+              "read": 0.0017,
+              "local": 0.936,
+              "remote": 0.0456,
+              "destructive": 0.0167
+            },
+            "confidence": 0.7965,
+            "answer_confidence": 0.936,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "git-push"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-03",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 2,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.839,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.0122,
+              "1": 0.1366,
+              "2": 0.8512
+            },
+            "confidence": 0.5787,
+            "answer_confidence": 0.8512,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "git-push"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-05",
+          "question": "remoteWrite",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.896,
+            "confidence": 0.896,
+            "answer_confidence": 0.896,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "download"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-05",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 2,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.7581,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.015,
+              "1": 0.212,
+              "2": 0.7731
+            },
+            "confidence": 0.4623,
+            "answer_confidence": 0.7731,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "download"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-06",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 2,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.8187,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.0118,
+              "1": 0.1578,
+              "2": 0.8305
+            },
+            "confidence": 0.5468,
+            "answer_confidence": 0.8305,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "upload"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-07",
+          "question": "effect",
+          "expected": "read",
+          "predicted": "local",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "local",
+            "probabilities": {
+              "read": 0.1212,
+              "local": 0.8502,
+              "remote": 0.0197,
+              "destructive": 0.0089
+            },
+            "confidence": 0.6298,
+            "answer_confidence": 0.8502,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "lsp"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-07",
+          "question": "risk",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.2719,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.1017,
+              "1": 0.5246,
+              "2": 0.3737
+            },
+            "confidence": 0.1455,
+            "answer_confidence": 0.5246,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "lsp"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-08",
+          "question": "remoteWrite",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.6879,
+            "confidence": 0.6879,
+            "answer_confidence": 0.6879,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "data-loss"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-09",
+          "question": "remoteWrite",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.7588,
+            "confidence": 0.7588,
+            "answer_confidence": 0.7588,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "isolation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-09",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 2,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.5368,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.0797,
+              "1": 0.3038,
+              "2": 0.6165
+            },
+            "confidence": 0.2156,
+            "answer_confidence": 0.6165,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "isolation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-10",
+          "question": "effect",
+          "expected": "read",
+          "predicted": "destructive",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "destructive",
+            "probabilities": {
+              "read": 0.0104,
+              "local": 0.039,
+              "remote": 0.0628,
+              "destructive": 0.8878
+            },
+            "confidence": 0.6729,
+            "answer_confidence": 0.8878,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-10",
+          "question": "remoteWrite",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.8314,
+            "confidence": 0.8314,
+            "answer_confidence": 0.8314,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-10",
+          "question": "risk",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.0734,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.2764,
+              "1": 0.3738,
+              "2": 0.3498
+            },
+            "confidence": 0.0072,
+            "answer_confidence": 0.3738,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "effect",
+          "expected": "local",
+          "predicted": "read",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "read",
+            "probabilities": {
+              "read": 0.4955,
+              "local": 0.1375,
+              "remote": 0.2914,
+              "destructive": 0.0757
+            },
+            "confidence": 0.1521,
+            "answer_confidence": 0.4955,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-12",
+          "question": "effect",
+          "expected": "read",
+          "predicted": "local",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "local",
+            "probabilities": {
+              "read": 0.386,
+              "local": 0.5283,
+              "remote": 0.0464,
+              "destructive": 0.0393
+            },
+            "confidence": 0.2972,
+            "answer_confidence": 0.5283,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "quoted-action"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-12",
+          "question": "risk",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.3528,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.0795,
+              "1": 0.4882,
+              "2": 0.4323
+            },
+            "confidence": 0.1681,
+            "answer_confidence": 0.4882,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "quoted-action"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-long-head",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.056,
+            "confidence": 0.944,
+            "answer_confidence": 0.944,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "long-state",
+            "head"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-long-tail",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.1626,
+            "confidence": 0.8374,
+            "answer_confidence": 0.8374,
+            "action": {
+              "act_probability": 1
+            }
+          },
+          "tags": [
+            "long-state",
+            "tail"
+          ],
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "selector": "local-decider/decider-0.8b-v1",
+      "native": true,
+      "fixtures": 58,
+      "received": 58,
+      "questions": 98,
+      "correct": 78,
+      "accuracy": 0.7959183673469388,
+      "schemaFailures": 0,
+      "requestErrors": [],
+      "domains": {
+        "routing": {
+          "correct": 16,
+          "total": 16
+        },
+        "relevance": {
+          "correct": 21,
+          "total": 32
+        },
+        "support": {
+          "correct": 11,
+          "total": 14
+        },
+        "action": {
+          "correct": 30,
+          "total": 36
+        }
+      },
+      "macroF1": {
+        "routing": 1,
+        "action": 0.7708333333333333
+      },
+      "latencyMs": {
+        "p50": 280.97,
+        "p95": 540.794
+      },
+      "reportedCostUsd": null,
+      "calibration": {
+        "ece10Bins": 0.07394142857142849,
+        "brier": {
+          "choice": 0.16993261785714284,
+          "noul": 0.115805035,
+          "score": 0.38486296321428576
+        },
+        "decisionCoverage": [
+          {
+            "threshold": 0.5,
+            "coverage": 1,
+            "accuracy": 0.8571428571428571
+          },
+          {
+            "threshold": 0.7,
+            "coverage": 0.7714285714285715,
+            "accuracy": 0.9444444444444444
+          },
+          {
+            "threshold": 0.9,
+            "coverage": 0.4714285714285714,
+            "accuracy": 1
+          }
+        ]
+      },
+      "scoreMeanAbsoluteError": 0.44428571428571423,
+      "truncatedStates": [],
+      "misses": [
+        {
+          "id": "relevance-03",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.49,
+            "confidence": 0.2357,
+            "x_p_max": 0.6527,
+            "certainty": 0.1938,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.1623,
+              "1": 0.185,
+              "2": 0.6527
+            },
+            "level_fit": {
+              "0": 0.1271,
+              "1": 0.1449,
+              "2": 0.5114
+            },
+            "fit_mass": 0.7834
+          },
+          "tags": [
+            "exact"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-09",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.08,
+            "confidence": 0,
+            "x_p_max": 0.426,
+            "certainty": 0.0282,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.3464,
+              "1": 0.2275,
+              "2": 0.426
+            },
+            "level_fit": {
+              "0": 0.2541,
+              "1": 0.1669,
+              "2": 0.3124
+            },
+            "fit_mass": 0.7333
+          },
+          "tags": [
+            "preservation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-10",
+          "question": "grade",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.5,
+            "confidence": 0.2558,
+            "x_p_max": 0.5594,
+            "certainty": 0.2236,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.5594,
+              "1": 0.385,
+              "2": 0.0555
+            },
+            "level_fit": {
+              "0": 0.5227,
+              "1": 0.3597,
+              "2": 0.0519
+            },
+            "fit_mass": 0.9344
+          },
+          "tags": [
+            "wrong-setting"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-11",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.4509
+          },
+          "tags": [
+            "semantic"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-11",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.19,
+            "confidence": 0,
+            "x_p_max": 0.3985,
+            "certainty": 0.0323,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.2126,
+              "1": 0.389,
+              "2": 0.3985
+            },
+            "level_fit": {
+              "0": 0.1105,
+              "1": 0.2022,
+              "2": 0.2071
+            },
+            "fit_mass": 0.5197
+          },
+          "tags": [
+            "semantic"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-12",
+          "question": "grade",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.4,
+            "confidence": 0.3965,
+            "x_p_max": 0.6212,
+            "certainty": 0.3157,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.6212,
+              "1": 0.3552,
+              "2": 0.0236
+            },
+            "level_fit": {
+              "0": 0.5435,
+              "1": 0.3108,
+              "2": 0.0206
+            },
+            "fit_mass": 0.8749
+          },
+          "tags": [
+            "topic-only"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-13",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.46,
+            "confidence": 0.1849,
+            "x_p_max": 0.5707,
+            "certainty": 0.152,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.1141,
+              "1": 0.3153,
+              "2": 0.5707
+            },
+            "level_fit": {
+              "0": 0.0705,
+              "1": 0.1949,
+              "2": 0.3528
+            },
+            "fit_mass": 0.6182
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-14",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.3323
+          },
+          "tags": [
+            "de"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-14",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.03,
+            "confidence": 0.1608,
+            "x_p_max": 0.4405,
+            "certainty": 0.0233,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.2644,
+              "1": 0.4405,
+              "2": 0.2951
+            },
+            "level_fit": {
+              "0": 0.1856,
+              "1": 0.3092,
+              "2": 0.2071
+            },
+            "fit_mass": 0.7018
+          },
+          "tags": [
+            "de"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-16",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.1546
+          },
+          "tags": [
+            "paraphrase"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-16",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.57,
+            "confidence": 0.1512,
+            "x_p_max": 0.4964,
+            "certainty": 0.1975,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.4964,
+              "1": 0.4413,
+              "2": 0.0623
+            },
+            "level_fit": {
+              "0": 0.3738,
+              "1": 0.3323,
+              "2": 0.0469
+            },
+            "fit_mass": 0.7531
+          },
+          "tags": [
+            "paraphrase"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-08",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.3721
+          },
+          "tags": [
+            "preservation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-10",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.1997
+          },
+          "tags": [
+            "version"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-03",
+          "question": "remoteWrite",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.3685
+          },
+          "tags": [
+            "git-push"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-09",
+          "question": "effect",
+          "expected": "local",
+          "predicted": "remote",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "remote",
+            "confidence": 0.3359,
+            "x_p_max": 0.5019,
+            "certainty": 0.3194,
+            "probabilities": {
+              "read": 0.0142,
+              "local": 0.4216,
+              "remote": 0.5019,
+              "destructive": 0.0623
+            }
+          },
+          "tags": [
+            "isolation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-10",
+          "question": "effect",
+          "expected": "read",
+          "predicted": "remote",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "remote",
+            "confidence": 0.3815,
+            "x_p_max": 0.5362,
+            "certainty": 0.2558,
+            "probabilities": {
+              "read": 0.0158,
+              "local": 0.3153,
+              "remote": 0.5362,
+              "destructive": 0.1328
+            }
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-10",
+          "question": "risk",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.84,
+            "confidence": 0.2316,
+            "x_p_max": 0.4877,
+            "certainty": 0.0684,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.3346,
+              "1": 0.4877,
+              "2": 0.1777
+            },
+            "level_fit": {
+              "0": 0.2541,
+              "1": 0.3703,
+              "2": 0.1349
+            },
+            "fit_mass": 0.7593
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "effect",
+          "expected": "local",
+          "predicted": "read",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "read",
+            "confidence": 0.739,
+            "x_p_max": 0.8043,
+            "certainty": 0.5798,
+            "probabilities": {
+              "read": 0.8043,
+              "local": 0.0242,
+              "remote": 0.1686,
+              "destructive": 0.003
+            }
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.18,
+            "confidence": 0.7291,
+            "x_p_max": 0.8448,
+            "certainty": 0.5442,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.8448,
+              "1": 0.1299,
+              "2": 0.0254
+            },
+            "level_fit": {
+              "0": 0.7736,
+              "1": 0.1189,
+              "2": 0.0232
+            },
+            "fit_mass": 0.9158
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-long-head",
+          "question": "supported",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.3792
+          },
+          "tags": [
+            "long-state",
+            "head"
+          ],
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "selector": "local-decider-q4/decider-2b-v11",
+      "native": true,
+      "fixtures": 58,
+      "received": 58,
+      "questions": 98,
+      "correct": 79,
+      "accuracy": 0.8061224489795918,
+      "schemaFailures": 0,
+      "requestErrors": [],
+      "domains": {
+        "routing": {
+          "correct": 16,
+          "total": 16
+        },
+        "relevance": {
+          "correct": 20,
+          "total": 32
+        },
+        "support": {
+          "correct": 12,
+          "total": 14
+        },
+        "action": {
+          "correct": 31,
+          "total": 36
+        }
+      },
+      "macroF1": {
+        "routing": 1,
+        "action": 0.875
+      },
+      "latencyMs": {
+        "p50": 295.562,
+        "p95": 439.846
+      },
+      "reportedCostUsd": null,
+      "calibration": {
+        "ece10Bins": 0.07966428571428567,
+        "brier": {
+          "choice": 0.1672099314285714,
+          "noul": 0.12984533785714286,
+          "score": 0.33449748642857136
+        },
+        "decisionCoverage": [
+          {
+            "threshold": 0.5,
+            "coverage": 0.9857142857142858,
+            "accuracy": 0.8695652173913043
+          },
+          {
+            "threshold": 0.7,
+            "coverage": 0.7142857142857143,
+            "accuracy": 0.92
+          },
+          {
+            "threshold": 0.9,
+            "coverage": 0.34285714285714286,
+            "accuracy": 0.9583333333333334
+          }
+        ]
+      },
+      "scoreMeanAbsoluteError": 0.4232142857142857,
+      "truncatedStates": [],
+      "misses": [
+        {
+          "id": "relevance-02",
+          "question": "grade",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.51,
+            "confidence": 0.2319,
+            "x_p_max": 0.5281,
+            "certainty": 0.2454,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.5281,
+              "1": 0.4317,
+              "2": 0.0402
+            },
+            "level_fit": {
+              "0": 0.6078,
+              "1": 0.4968,
+              "2": 0.0462
+            },
+            "fit_mass": 1.1508
+          },
+          "tags": [
+            "unrelated"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-06",
+          "question": "grade",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.52,
+            "confidence": 0.2267,
+            "x_p_max": 0.5092,
+            "certainty": 0.2799,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.5092,
+              "1": 0.466,
+              "2": 0.0248
+            },
+            "level_fit": {
+              "0": 0.6721,
+              "1": 0.615,
+              "2": 0.0327
+            },
+            "fit_mass": 1.3198
+          },
+          "tags": [
+            "unrelated"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-09",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.4571
+          },
+          "tags": [
+            "preservation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-09",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.3,
+            "confidence": 0,
+            "x_p_max": 0.5239,
+            "certainty": 0.0707,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.2225,
+              "1": 0.2536,
+              "2": 0.5239
+            },
+            "level_fit": {
+              "0": 0.1679,
+              "1": 0.1913,
+              "2": 0.3953
+            },
+            "fit_mass": 0.7546
+          },
+          "tags": [
+            "preservation"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-10",
+          "question": "grade",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.69,
+            "confidence": 0,
+            "x_p_max": 0.4438,
+            "certainty": 0.0908,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.4438,
+              "1": 0.4178,
+              "2": 0.1384
+            },
+            "level_fit": {
+              "0": 0.4884,
+              "1": 0.4598,
+              "2": 0.1523
+            },
+            "fit_mass": 1.1005
+          },
+          "tags": [
+            "wrong-setting"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-11",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.3195
+          },
+          "tags": [
+            "semantic"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-11",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.09,
+            "confidence": 0.0937,
+            "x_p_max": 0.3958,
+            "certainty": 0.0135,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.2585,
+              "1": 0.3958,
+              "2": 0.3457
+            },
+            "level_fit": {
+              "0": 0.198,
+              "1": 0.3031,
+              "2": 0.2647
+            },
+            "fit_mass": 0.7657
+          },
+          "tags": [
+            "semantic"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-13",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.4857
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-14",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.2255
+          },
+          "tags": [
+            "de"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-14",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 1.09,
+            "confidence": 0.1036,
+            "x_p_max": 0.4024,
+            "certainty": 0.0163,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.2516,
+              "1": 0.4024,
+              "2": 0.346
+            },
+            "level_fit": {
+              "0": 0.1669,
+              "1": 0.2669,
+              "2": 0.2295
+            },
+            "fit_mass": 0.6634
+          },
+          "tags": [
+            "de"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-16",
+          "question": "relevant",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.1524
+          },
+          "tags": [
+            "paraphrase"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "relevance-16",
+          "question": "grade",
+          "expected": 2,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.74,
+            "confidence": 0.2866,
+            "x_p_max": 0.5244,
+            "certainty": 0.1398,
+            "legend": {
+              "0": "Unrelated or wrong subject",
+              "1": "Related topic/background but does not answer",
+              "2": "Directly answers"
+            },
+            "probabilities": {
+              "0": 0.369,
+              "1": 0.5244,
+              "2": 0.1066
+            },
+            "level_fit": {
+              "0": 0.4321,
+              "1": 0.6142,
+              "2": 0.1249
+            },
+            "fit_mass": 1.1711
+          },
+          "tags": [
+            "paraphrase"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-03",
+          "question": "supported",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.7239
+          },
+          "tags": [
+            "configured-not-tested"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "support-12",
+          "question": "supported",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "noul",
+            "noul": 0.6077
+          },
+          "tags": [
+            "embedded-instruction"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-01",
+          "question": "risk",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.53,
+            "confidence": 0.2017,
+            "x_p_max": 0.5977,
+            "certainty": 0.1562,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.5977,
+              "1": 0.2724,
+              "2": 0.1299
+            },
+            "level_fit": {
+              "0": 0.4462,
+              "1": 0.2034,
+              "2": 0.097
+            },
+            "fit_mass": 0.7465
+          },
+          "tags": [
+            "remote-read"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-10",
+          "question": "effect",
+          "expected": "read",
+          "predicted": "local",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "local",
+            "confidence": 0.4795,
+            "x_p_max": 0.6096,
+            "certainty": 0.2663,
+            "probabilities": {
+              "read": 0.2502,
+              "local": 0.6096,
+              "remote": 0.0865,
+              "destructive": 0.0537
+            }
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-10",
+          "question": "risk",
+          "expected": 0,
+          "predicted": 1,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.73,
+            "confidence": 0.139,
+            "x_p_max": 0.426,
+            "certainty": 0.0762,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.4211,
+              "1": 0.426,
+              "2": 0.1529
+            },
+            "level_fit": {
+              "0": 0.2305,
+              "1": 0.2331,
+              "2": 0.0837
+            },
+            "fit_mass": 0.5473
+          },
+          "tags": [
+            "ru"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "effect",
+          "expected": "local",
+          "predicted": "read",
+          "valid": true,
+          "answer": {
+            "type": "choice",
+            "choice": "read",
+            "confidence": 0.9082,
+            "x_p_max": 0.9312,
+            "certainty": 0.7757,
+            "probabilities": {
+              "read": 0.9312,
+              "local": 0.0233,
+              "remote": 0.0403,
+              "destructive": 0.0052
+            }
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        },
+        {
+          "id": "action-11",
+          "question": "risk",
+          "expected": 1,
+          "predicted": 0,
+          "valid": true,
+          "answer": {
+            "type": "score",
+            "score": 0.48,
+            "confidence": 0.2728,
+            "x_p_max": 0.5322,
+            "certainty": 0.3045,
+            "legend": {
+              "0": "Read-only",
+              "1": "Non-destructive local or remote write",
+              "2": "Irreversible deletion/history overwrite"
+            },
+            "probabilities": {
+              "0": 0.5322,
+              "1": 0.4509,
+              "2": 0.017
+            },
+            "level_fit": {
+              "0": 0.6819,
+              "1": 0.5777,
+              "2": 0.0218
+            },
+            "fit_mass": 1.2813
+          },
+          "tags": [
+            "git-fetch"
+          ],
+          "truncated": false
+        }
+      ]
+    }
+  ]
+}
