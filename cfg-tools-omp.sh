@@ -49,9 +49,29 @@ put_record("retry.fallbackChains", fallbacks)
 EOF
 
 # ------------------------------------------------------------------------
-# headroom MCP and TypeScript LSP; preserve unrelated entries
+# delegation preprompt, headroom MCP and TypeScript LSP; preserve unrelated content
 # ------------------------------------------------------------------------
 mkdir -p "$HOME/.omp/agent"
+python3 - "$HOME/.omp/agent/APPEND_SYSTEM.md" "$SCRIPT_DIR/home/.omp/agent/APPEND_SYSTEM.md" <<'EOF'
+import re, sys
+from pathlib import Path
+
+target, template = map(Path, sys.argv[1:])
+section = template.read_text()
+if not target.exists():
+    target.write_text(section)
+else:
+    original = target.read_bytes().decode("utf-8")
+    heading = re.compile(r"(?m)^## Delegation policy[ \t]*\r?$")
+    match = heading.search(original)
+    if match:
+        next_heading = re.search(r"(?m)^#{1,2}[ \t]+", original[match.end():])
+        end = match.end() + next_heading.start() if next_heading else len(original)
+        target.write_text(original[:match.start()] + section + original[end:])
+    else:
+        separator = "" if not original or original.endswith("\n\n") else "\n" if original.endswith("\n") else "\n\n"
+        target.write_text(original + separator + section)
+EOF
 python3 - "$HOME/.omp/agent/mcp.json" "$SCRIPT_DIR/home/.omp/agent/mcp.json" <<'EOF'
 import json, sys
 from pathlib import Path

@@ -12,7 +12,7 @@ Debian/Ubuntu-first; macOS notes where the recipe differs.
 | `cfg-tools-gradle.sh` | Gradle via SDKMAN + daemon/parallel config | version switches via `sdk`; copies `home/.gradle/gradle.properties` |
 | `cfg-tools-tmux.sh` | tmux + `.tmux.conf` + TPM plugin install | installs TPM (previously missing), then plugins |
 | `cfg-tools-oh-my-zsh.sh` | zsh + Oh My Zsh + 2 plugins | canonical `ohmyzsh/ohmyzsh` URL, unattended, idempotent plugin list |
-| `cfg-tools-omp.sh` | OMP native judge, compaction, LSP + headroom MCP | merge-safe configuration; explicit shadow experiments |
+| `cfg-tools-omp.sh` | OMP native judge, compaction, LSP + headroom MCP | merge-safe configuration and delegation preprompt |
 | `cfg-tools-model-gate.sh` | optional model-agnostic local gate | see below |
 
 Run from the repo root (`./cfg-tools-*.sh` resolve their `home/` payloads
@@ -35,7 +35,8 @@ clobbers.
 * `home/.gitignore-file` — home-dir oriented ignore starter.
 * `home/.gradle/gradle.properties` — daemon + parallel + configure-on-demand.
 * `home/.tmux.conf` — `C-a` prefix, Alt-arrow navigation, TPM + sensible/solarized.
-* `home/.omp/agent/` — OMP `config.yml`, TypeScript `lsp.json`, and headroom `mcp.json`.
+* `home/.omp/agent/` — OMP `config.yml`, delegation `APPEND_SYSTEM.md`,
+  TypeScript `lsp.json`, and headroom `mcp.json`.
 
 ## OMP agent defaults
 
@@ -51,138 +52,17 @@ clobbers.
 * enables task LSP and TypeScript server support (`typescript` and
   `typescript-language-server@6.0.1` installed via Bun); `home/.omp/agent/lsp.json`
   merges the named server into existing per-user server configuration.
+* provisions the delegation policy from `home/.omp/agent/APPEND_SYSTEM.md`:
+  benefit-based delegation, main-owned orchestration, bounded worker briefs,
+  capability/cost-aware selection, independent slices dispatched together,
+  and evidence-backed acceptance. Replaces only the `## Delegation policy`
+  section; preserves unrelated preprompt instructions and does not duplicate
+  the section on re-runs.
 * requires `omp`, Bun, and `uv`; the script installs `headroom-ai[all]` with
   Python 3.13 using uv. Add Bun's global binary directory to `PATH` before
   running the script.
 * Native OMP experimental context management remains disabled. Global OMP
   notes remain disabled.
-
-### Isolated OMP experiments
-
-`experiments/omp/` contains synthetic fixtures, explicit OMP extensions, local
-System One runners, and retained results. Nothing here is automatically loaded
-or changes production model roles. No credentials or private session journals
-are included. Run from that directory with an authenticated OMP installation:
-
-```sh
-OMP_EVAL_CONCURRENCY=1 omp --no-session --no-extensions -e ./evaluate.ts -p /decision-eval
-omp --no-session --no-extensions -e ./failover.ts -p /judge-failover
-bun score.ts fixtures.jsonl results/hosted-sequential.jsonl results/local-sequential.jsonl results/q4-sequential.jsonl
-```
-
-The 58 held-out synthetic states contain 98 routing, relevance, evidence-support,
-and action-selection questions. Expected labels are explicit rubrics, not a
-production accuracy estimate. Sequential results: Jev 87/98, Luna 90/98,
-Decider 2B Q4 79/98, Decider 0.8B 78/98, Laya multilingual 52/98. Hosted
-median latencies were 264 ms (Jev) and 1990 ms (Luna); reported total costs
-were $0.00143 and $0.00336. A second hosted run varied, so this small sample
-does not establish quality superiority. Luna's prompted confidence is not
-calibrated native probability. Local replay files used concurrent services
-and are not valid isolated latency comparisons. Cold start and energy were
-not measured.
-Reversing criterion order on all 16 routing fixtures preserved 16/16 for
-Jev, Luna, and Q4; Laya scored 14/16. Raw probes and their summary are retained.
-
-`results/local-models.json` records pinned model/package identities. Install
-local dependencies and download those public revisions into an isolated
-environment; provisioning deliberately does neither. The official Decider HTTP
-server does not serve GGUF: `serve-decider-q4.py` wraps the official
-`Decider.system_one` SDK with a loopback-only experimental endpoint. Laya
-requests must explicitly select `multilingual` and set `max_len=8192`; omitted
-selection can route to another checkpoint. `http-evaluate.py --help` describes
-response-identity checks. Both services were exercised through `/v1/systemone`
-and OMP's native TypeSafe client. Decider can silently truncate; the current
-OMP client also discards Laya's routing/truncation metadata. Neither local
-model is selected globally.
-
-Fault injection verified paid-chain traversal for HTTP 401/403/429/503.
-Timeout exhaustion and caller cancellation did not traverse the fallback;
-the fallback is not a guarantee for every failure class.
-
-`results/context.json` records actual session compactions and restart recovery.
-The bounded notes trial retained its exact fixture across three real rollovers
-and restart, but repeated a single rollover request three times: rejected by
-the no-repeat gate. A low-threshold stress trial produced 49 rollovers and
-maintenance-loop warnings. Ordinary compaction was exercised twice through
-`context-compact.ts` (explicit `/ordinary-context-compact`, isolated `/tmp`
-profile only): original requirements and evidence paths survived restart,
-while other fixture fields were paraphrased/merged. Print-mode `/compact`
-text is not evidence of an actual compaction. Trials were not token-matched;
-no cost-efficiency conclusion is claimed. Experimental notes remain disabled.
-
-### Temporary live Decider 0.8B shadow
-
-`shadow-proxy.py` always calls native remote Jev after a best-effort local
-Decider 0.8B judgment. Only Jev's original response is returned; there is no
-confidence-based acceptance yet. Local timeout (1 second), unavailable service,
-or invalid model identity cannot substitute a local answer. The remote timeout
-is 8 seconds; remote HTTP status and `Retry-After` propagate to the existing
-paid Jev fallback/retry policy. The proxy binds to loopback, uses the caller's
-existing Jev credential only for remote requests, and also proxies authenticated
-model discovery.
-
-The local contribution files capture the active setup without credentials:
-`shadow-models.yml` is the provider-only overlay; `shadow-trial.json` is the
-current trial snapshot, including its fixed **2026-10-07 12:04:42 UTC** deadline
-(not a new seven-day period on every launch). Merge the overlay into existing
-`~/.omp/agent/models.yml` rather than replacing that file. Copy the trial snapshot
-only when intentionally reproducing this trial; do not overwrite a newer active
-trial or silently renew its deadline.
-
-Install `shadow-requirements.txt` into an isolated persistent environment.
-`launch-decider-shadow.sh` expects the pinned public model from
-`results/local-models.json` under `~/.omp/agent/cache/decider-shadow/hf`;
-the launch scripts perform no downloads. `launch-jev-shadow.sh` reads the fixed
-deadline from `~/.omp/agent/telemetry/decider-jev/trial.json`. After that deadline,
-the proxy bypasses local inference and continues remote-only; supervised
-processes remain installed until explicitly stopped.
-
-`launchagents/` contains portable templates matching the active supervisors.
-Render them for this checkout and home directory without installing, activating,
-downloading, or calling an inference API:
-
-```sh
-python3 experiments/omp/render-shadow-launchagents.py --output-dir /tmp/omp-shadow-launchagents
-```
-
-Review the rendered files before copying to `~/Library/LaunchAgents/`. The
-renderer changes no OMP settings or active service. Model caches, runtime
-environments, Python bytecode, and local telemetry are excluded from repository
-contributions; only public synthetic evaluation results are retained here.
-
-The current workstation trial runs for seven days from activation, supervised
-by user LaunchAgents `ai.omp.decider-shadow` and `ai.omp.jev-shadow`. Its only
-production model change is `providers.typesafe.baseUrl: http://127.0.0.1:18744`
-in `~/.omp/agent/models.yml`; judge roles and paid fallback are unchanged.
-New OMP processes pick it up; existing model registries require a restart.
-This route is deliberately **not** installed by `cfg-tools-omp.sh`.
-
-Local statistics: `~/.omp/agent/telemetry/decider-jev/requests.jsonl`, directory
-0700/file 0600. Records contain model identities, timings, failure categories,
-numeric token usage, question ordinal/type, probabilities, agreement, and score
-deltas—not prompts, question keys, labels, answer strings, or credentials.
-Local responses can silently truncate; probability agreement is not proof of
-correctness. Report with:
-
-```sh
-python3 experiments/omp/shadow-stats.py
-```
-
-The report includes local/remote latency percentiles, failures, Jev agreement,
-score differences, and hypothetical confidence-gate coverage. Agreement is
-not ground-truth accuracy. Missing provider cost is reported as unknown,
-not zero; no confidence gate is enabled by this report.
-
-To end the trial, remove only the temporary `providers.typesafe` block from
-`~/.omp/agent/models.yml` and restart OMP **before** stopping the services:
-
-```sh
-launchctl bootout "gui/$(id -u)/ai.omp.jev-shadow"
-launchctl bootout "gui/$(id -u)/ai.omp.decider-shadow"
-```
-
-Remove the two corresponding plist files from `~/Library/LaunchAgents/` to
-prevent reactivation on login. Existing statistics remain local for analysis.
 
 ## cmux link routing
 
