@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import hmac
 import fcntl
 import json
 import math
@@ -26,7 +28,7 @@ MAX_ANSWER = 2_000
 MAX_OUTPUT = 64 * 1024
 MAX_ATTEMPTS = 3
 FINAL_STATES = {"not_actionable", "completed"}
-SCREEN_STATES = {"not_actionable", "needs_input", "proposed", "completed"}
+SCREEN_STATES = {"not_actionable", "needs_input", "needs_approval", "proposed", "completed"}
 
 
 def state_dir() -> Path:
@@ -50,10 +52,20 @@ def connect() -> sqlite3.Connection:
             state TEXT NOT NULL, phase TEXT NOT NULL, score REAL,
             reason TEXT, actionable INTEGER, summary TEXT, question TEXT,
             evidence TEXT, user_answer TEXT, attempts INTEGER NOT NULL DEFAULT 0,
+            approved_summary TEXT, approved_question TEXT, approved_evidence TEXT,
+            approval_id TEXT,
             next_run REAL NOT NULL, error TEXT, created_at REAL NOT NULL,
             updated_at REAL NOT NULL
         )"""
     )
+    # Add the approval snapshot to databases created by earlier skill versions.
+    columns = {row["name"] for row in db.execute("PRAGMA table_info(events)")}
+    for name, declaration in (
+        ("approved_summary", "TEXT"), ("approved_question", "TEXT"),
+        ("approved_evidence", "TEXT"), ("approval_id", "TEXT"),
+    ):
+        if name not in columns:
+            db.execute(f"ALTER TABLE events ADD COLUMN {name} {declaration}")
     os.chmod(path, 0o600)
     return db
 
@@ -94,7 +106,7 @@ def spawn_worker() -> None:
     )
 
 
-def submit(db: sqlite3.Connection) -> dict:
+def submit(db: sqlite3.Connection, *, wait: bool = False) -> dict:
     event = read_json_stdin()
     event_id = bounded_text(event.get("event_id"), "event_id", 256, required=True)
     session_id = bounded_text(event.get("session_id"), "session_id", 256, required=True)
@@ -110,6 +122,10 @@ def submit(db: sqlite3.Connection) -> dict:
         (event_id, session_id, prompt, context, cwd, now, now, now),
     )
     inserted = cursor.rowcount == 1
+    if wait:
+        worker(db)
+        return {**public_row(db.execute("SELECT * FROM events WHERE event_id=?", (event_id,)).fetchone()),
+                "accepted": inserted}
     if inserted:
         spawn_worker()
     row = db.execute("SELECT state FROM events WHERE event_id=?", (event_id,)).fetchone()
@@ -117,12 +133,17 @@ def submit(db: sqlite3.Connection) -> dict:
 
 
 def public_row(row: sqlite3.Row) -> dict:
+    evidence = json.loads(row["evidence"]) if row["evidence"] else None
+    approval_id = None
+    if row["state"] == "needs_approval":
+        approval_id = proposal_token(row["summary"], row["question"], evidence)
     return {
         "event_id": row["event_id"], "session_id": row["session_id"],
         "state": row["state"], "phase": row["phase"], "score": row["score"],
         "reason": row["reason"], "actionable": None if row["actionable"] is None else bool(row["actionable"]),
         "summary": row["summary"], "question": row["question"],
-        "evidence": json.loads(row["evidence"]) if row["evidence"] else None,
+        "evidence": evidence, "cwd": row["cwd"], "approval_id": approval_id,
+        "approved_proposal": approved_proposal(row),
         "pending_answer": row["user_answer"] is not None,
         "attempts": row["attempts"], "error": row["error"],
         "created_at": row["created_at"], "updated_at": row["updated_at"],
@@ -142,8 +163,106 @@ def status(db: sqlite3.Connection, event_id: str | None) -> dict:
     return public_row(rows[0]) if event_id else {"events": [public_row(row) for row in rows]}
 
 
+def proposal_token(summary: str, question: str, evidence: object) -> str:
+    encoded = json.dumps([summary, question, evidence], ensure_ascii=False,
+                         sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return "apv_" + hashlib.sha256(encoded).hexdigest()[:32]
+
+
+def approved_proposal(row: sqlite3.Row) -> dict | None:
+    if row["approved_summary"] is None:
+        return None
+    return {
+        "summary": row["approved_summary"], "question": row["approved_question"],
+        "evidence": json.loads(row["approved_evidence"]) if row["approved_evidence"] else None,
+    }
+
+
+def _approve_locked(db: sqlite3.Connection, row: sqlite3.Row, token: str) -> None:
+    evidence = json.loads(row["evidence"]) if row["evidence"] else None
+    expected = proposal_token(row["summary"], row["question"], evidence)
+    if not hmac.compare_digest(expected, token):
+        raise ValueError("stale or invalid approval_id")
+    now = time.time()
+    cursor = db.execute(
+        """UPDATE events SET state='queued', phase='implement', user_answer='approve',
+           approved_summary=summary, approved_question=question, approved_evidence=evidence,
+           approval_id=?, attempts=0, next_run=?, error=NULL, updated_at=?
+           WHERE event_id=? AND state='needs_approval'""",
+        (expected, now, now, row["event_id"]),
+    )
+    if cursor.rowcount != 1:
+        raise ValueError("approval is stale; event is no longer awaiting approval")
+
+
+def decide(db: sqlite3.Connection, event_id: str, decision: str, approval_id: str) -> dict:
+    if decision not in {"yes", "no"}:
+        raise ValueError("decision must be yes or no")
+    approval_id = bounded_text(approval_id, "approval_id", 128, required=True)
+    db.execute("BEGIN IMMEDIATE")
+    try:
+        row = db.execute("SELECT * FROM events WHERE event_id=?", (event_id,)).fetchone()
+        if row is None or row["state"] != "needs_approval":
+            raise ValueError("event must be awaiting approval; decision is stale or duplicated")
+        expected = proposal_token(row["summary"], row["question"],
+                                  json.loads(row["evidence"]) if row["evidence"] else None)
+        if not hmac.compare_digest(expected, approval_id):
+            raise ValueError("stale or invalid approval_id")
+        if decision == "yes":
+            _approve_locked(db, row, approval_id)
+            result_state = "queued"
+        else:
+            now = time.time()
+            cursor = db.execute(
+                """UPDATE events SET state='declined', prompt='', assistant_context='',
+                   user_answer=NULL, approval_id=?, error=NULL, updated_at=?
+                   WHERE event_id=? AND state='needs_approval'""",
+                (expected, now, event_id),
+            )
+            if cursor.rowcount != 1:
+                raise ValueError("approval is stale; event is no longer awaiting approval")
+            result_state = "declined"
+        db.execute("COMMIT")
+    except Exception:
+        db.execute("ROLLBACK")
+        raise
+    if decision == "yes":
+        spawn_worker()
+    return {"event_id": event_id, "accepted": True, "state": result_state}
+
+
 def resolve(db: sqlite3.Connection, event_id: str, answer: str) -> dict:
     answer = bounded_text(answer, "answer", MAX_ANSWER, required=True)
+    if answer == "approve":
+        db.execute("BEGIN IMMEDIATE")
+        try:
+            row = db.execute("SELECT * FROM events WHERE event_id=?", (event_id,)).fetchone()
+            if row is None:
+                raise ValueError("unknown event_id")
+            if row["state"] == "needs_approval":
+                token = proposal_token(row["summary"], row["question"],
+                                       json.loads(row["evidence"]) if row["evidence"] else None)
+                _approve_locked(db, row, token)
+            elif row["state"] == "proposed":
+                evidence = json.loads(row["evidence"]) if row["evidence"] else None
+                token = proposal_token(row["summary"], row["question"], evidence)
+                cursor = db.execute(
+                    """UPDATE events SET state='queued', phase='implement', user_answer='approve',
+                       approved_summary=summary, approved_question=question, approved_evidence=evidence,
+                       approval_id=?, attempts=0, next_run=?, error=NULL, updated_at=?
+                       WHERE event_id=? AND state='proposed'""",
+                    (token, time.time(), time.time(), event_id),
+                )
+                if cursor.rowcount != 1:
+                    raise ValueError("event is no longer proposed")
+            else:
+                raise ValueError("literal approve requires needs_approval or legacy proposed state")
+            db.execute("COMMIT")
+        except Exception:
+            db.execute("ROLLBACK")
+            raise
+        spawn_worker()
+        return {"event_id": event_id, "accepted": True, "state": "queued"}
     now = time.time()
     cursor = db.execute(
         """UPDATE events SET state='queued', phase='screen', user_answer=?,
@@ -263,11 +382,14 @@ def screen_command() -> list[str] | None:
 
 
 def screen_event(row: sqlite3.Row, command: list[str]) -> dict:
+    snapshot = approved_proposal(row)
     payload = {
+        "phase": row["phase"],
         "event_id": row["event_id"], "session_id": row["session_id"],
         "prompt": row["prompt"], "assistant_context": row["assistant_context"],
         "cwd": row["cwd"], "score": row["score"], "reason": row["reason"],
         "actionable": bool(row["actionable"]), "user_answer": row["user_answer"],
+        "approved_proposal": snapshot, "approval_id": row["approval_id"],
     }
     timeout = int(os.environ.get("FEEDBACK_SCREEN_TIMEOUT", "180"))
     if not 1 <= timeout <= 900:
@@ -289,8 +411,10 @@ def screen_event(row: sqlite3.Row, command: list[str]) -> dict:
         raise ValueError("screening output requires valid status")
     result["summary"] = bounded_text(result.get("summary"), "screening summary", 2_000, required=True)
     result["question"] = bounded_text(result.get("question"), "screening question", 2_000)
-    if result["status"] == "needs_input" and not result["question"]:
-        raise ValueError("needs_input screening output requires question")
+    if result["status"] in {"needs_input", "needs_approval"} and not result["question"]:
+        raise ValueError(f"{result['status']} screening output requires question")
+    if result["status"] == "needs_approval" and not result["summary"].strip():
+        raise ValueError("needs_approval screening output requires explanatory summary")
     evidence = result.get("evidence")
     if evidence is not None and len(json.dumps(evidence, ensure_ascii=False)) > 8_000:
         raise ValueError("screening evidence exceeds 8,000 characters")
@@ -343,7 +467,7 @@ def process_one(db: sqlite3.Connection, row: sqlite3.Row) -> None:
              int(final), int(final), time.time(), row["event_id"]),
         )
         notification = os.environ.get("FEEDBACK_NOTIFY_COMMAND")
-        if notification and result["status"] in {"needs_input", "proposed"}:
+        if notification and result["status"] in {"needs_input", "needs_approval", "proposed"}:
             # Notification failure must not replay screening or approved work.
             try:
                 argv = json.loads(notification)
@@ -352,8 +476,11 @@ def process_one(db: sqlite3.Connection, row: sqlite3.Row) -> None:
                 message = f"Feedback {row['event_id']}: {result['question'] or result['summary']}"
                 subprocess.run([*argv, message[:1000]], check=True, capture_output=True, timeout=10)
             except Exception as error:
+                previous = db.execute("SELECT error FROM events WHERE event_id=?",
+                                      (row["event_id"],)).fetchone()["error"]
+                message = "NotificationError: " + str(error)[:500]
                 db.execute("UPDATE events SET error=? WHERE event_id=?",
-                           ("NotificationError: " + str(error)[:500], row["event_id"]))
+                           ((previous + "; " + message) if previous else message, row["event_id"]))
     except Exception as error:
         failure(db, row, error)
 
@@ -396,7 +523,9 @@ def main() -> int:
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
-    commands.add_parser("submit", help="read event JSON from stdin and enqueue")
+    submit_parser = commands.add_parser("submit", help="read event JSON from stdin and enqueue")
+    submit_parser.add_argument("--wait", action="store_true",
+                               help="screen in this adapter subprocess, not in the main conversation")
     status_parser = commands.add_parser("status", help="emit one event or 50 most recent as JSON")
     status_parser.add_argument("event_id", nargs="?")
     resolve_parser = commands.add_parser("resolve", help="answer a pending question or proposal")
@@ -404,18 +533,24 @@ def main() -> int:
     resolve_parser.add_argument("answer")
     resume_parser = commands.add_parser("resume", help="retry after configuration or failure is fixed")
     resume_parser.add_argument("event_id")
+    decide_parser = commands.add_parser("decide", help="approve or decline a screened proposal")
+    decide_parser.add_argument("event_id")
+    decide_parser.add_argument("decision", choices=("yes", "no"))
+    decide_parser.add_argument("--approval-id", required=True)
     commands.add_parser("worker", help=argparse.SUPPRESS)
     args = parser.parse_args()
     try:
         with connect() as db:
             if args.command == "submit":
-                result = submit(db)
+                result = submit(db, wait=args.wait)
             elif args.command == "status":
                 result = status(db, args.event_id)
             elif args.command == "resolve":
                 result = resolve(db, args.event_id, args.answer)
             elif args.command == "resume":
                 result = resume(db, args.event_id)
+            elif args.command == "decide":
+                result = decide(db, args.event_id, args.decision, args.approval_id)
             else:
                 worker(db)
                 return 0
