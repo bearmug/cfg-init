@@ -1,5 +1,9 @@
 """Deterministic queue/protocol tests. Run with: python3 -m unittest test_feedback.py"""
 
+import contextlib
+import importlib.util
+import io
+import subprocess
 import json
 import os
 from pathlib import Path
@@ -189,6 +193,69 @@ class FeedbackTest(unittest.TestCase):
         self.assertTrue(all(entry["prompt"] == malicious for entry in inputs))
         self.assertFalse(marker.exists())
         self.assertEqual(self.row()["prompt"], "")
+
+
+class AcpRelayTest(unittest.TestCase):
+    def test_host_envelope_is_not_scored_and_feedback_stays_local(self):
+        relay = Path(__file__).resolve().parents[3] / ".local/share/cfg-init-feedback/omp_acp.py"
+        with tempfile.TemporaryDirectory() as directory:
+            home = Path(directory)
+            engine = home / ".agents/skills/dissatisfaction/feedback.py"
+            engine.parent.mkdir(parents=True)
+            engine.write_text(
+                "import json,sys\nfrom pathlib import Path\n"
+                "if sys.argv[1] == 'submit':\n"
+                " with (Path.home()/'events.jsonl').open('a') as f:\n"
+                "  f.write(json.dumps(json.load(sys.stdin))+'\\n')\n"
+                "print('{}')\n"
+            )
+            child = home / "fake-omp"
+            child.write_text(
+                "#!" + sys.executable + "\nimport json,sys\n"
+                "for line in sys.stdin:\n"
+                " m=json.loads(line)\n"
+                " print(json.dumps({'jsonrpc':'2.0','id':m['id'],"
+                "'result':{'stopReason':'end_turn'}}),flush=True)\n"
+            )
+            child.chmod(0o755)
+            envelope = ("<system-reminder>host date</system-reminder>"
+                        "<t3_code_instructions>host rules</t3_code_instructions>"
+                        "<user_request>You ignored my request</user_request>")
+            messages = [
+                {"jsonrpc": "2.0", "id": number, "method": "session/prompt",
+                 "params": {"sessionId": "s", "prompt": [{"type": "text", "text": text}]}}
+                for number, text in ((1, envelope), (2, "/feedback"))
+            ]
+            result = subprocess.run(
+                [sys.executable, str(relay), "acp"],
+                input="".join(json.dumps(message) + "\n" for message in messages),
+                env={**os.environ, "HOME": str(home), "FEEDBACK_OMP_BIN": str(child),
+                     "FEEDBACK_DISABLED": "0"},
+                capture_output=True, text=True, check=True, timeout=10,
+            )
+            events = [json.loads(line) for line in (home / "events.jsonl").read_text().splitlines()]
+            self.assertEqual(events[0]["prompt"], "You ignored my request")
+            replies = [json.loads(line) for line in result.stdout.splitlines()]
+            self.assertEqual(sum(reply.get("id") == 2 for reply in replies), 1)
+            self.assertTrue(any(reply.get("method") == "session/update" for reply in replies))
+
+
+class ApprovalTest(unittest.TestCase):
+    def test_only_literal_approval_authorizes_worktree_implementation(self):
+        path = Path(__file__).resolve().parents[3] / ".local/share/cfg-init-feedback/screen_omp.py"
+        spec = importlib.util.spec_from_file_location("screen_omp", path)
+        screen_omp = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(screen_omp)
+        for answer in (None, "", "Approve", " APPROVE ", "approve ", "approved", "approve"):
+            with self.subTest(answer=answer), \
+                    patch.object(screen_omp, "implement", return_value={"status": "proposed"}) as implement, \
+                    patch.object(screen_omp, "screen", return_value={"status": "needs_input"}) as screen, \
+                    patch.object(sys, "stdin", io.StringIO(json.dumps({
+                        "prompt": "approve", "user_answer": answer,
+                    }))), contextlib.redirect_stdout(io.StringIO()):
+                screen_omp.main()
+                self.assertEqual(implement.called, answer == "approve")
+                self.assertEqual(screen.called, answer != "approve")
 
 
 if __name__ == "__main__":

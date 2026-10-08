@@ -116,7 +116,7 @@ def main():
                                          if item.get("type") == "text")
                         # T3 wraps user text in an envelope of host instructions.
                         # Score the user request, not injected harness documentation.
-                        if text.startswith("<t3_code_instructions>") and "<user_request>" in text:
+                        if text.startswith(("<t3_code_instructions>", "<system-reminder>")) and "<user_request>" in text:
                             body = text.split("<user_request>", 1)[1]
                             if "</user_request>" in body:
                                 text = body.rsplit("</user_request>", 1)[0].strip()

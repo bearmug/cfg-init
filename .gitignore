@@ -1,2 +1,7 @@
 .idea/
 .gradle/
+
+# Local environment and secret material; keep sanitized examples trackable.
+.env
+.env.*
+!.env.example

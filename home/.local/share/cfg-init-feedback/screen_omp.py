@@ -90,7 +90,7 @@ def main():
     event = json.load(sys.stdin)
     answer = event.get("user_answer", "")
     # Explicit approval is a control field provided by resolve, never inferred from prompt text.
-    if isinstance(answer, str) and answer.strip().lower() == "approve":
+    if answer == "approve":
         result = implement(event)
     else:
         result = screen(event)
