@@ -12,7 +12,7 @@ Debian/Ubuntu-first, with an explicit macOS Homebrew path.
 | `cfg-tools-gradle.sh` | Gradle through SDKMAN plus daemon/parallel config | Installs only when SDKMAN has no current Gradle; version switches stay with `sdk` |
 | `cfg-tools-tmux.sh` | tmux, `.tmux.conf`, and TPM plugin install | Installs TPM when missing, then plugins |
 | `cfg-tools-oh-my-zsh.sh` | zsh, Oh My Zsh, and two plugins | Canonical `ohmyzsh/ohmyzsh` URL; unattended and idempotent |
-| `cfg-tools-omp.sh` | OMP spend tuning plus headroom MCP | Per-key `omp config set`; merges `mcp.json` |
+| `cfg-tools-omp.sh` | OMP native judge, compaction, LSP + headroom MCP | merge-safe configuration and delegation preprompt |
 | `cfg-tools-model-gate.sh` | Optional model-agnostic local Bun gate | Installs the proxy only; provider/model routing is separate |
 | `cfg-tools-model-gate-bonsai.sh` | Explicit Bonsai OMP routing example | Opt-in example; requires `omp` and `python3`; all values are overrideable |
 | `Brewfile` / `cfg-tools-macos.sh` | macOS Homebrew baseline | Requires Homebrew; `CFG_INIT_LOCAL_AI=1` adds optional Ollama and llama.cpp packages |
@@ -50,21 +50,61 @@ recipe; the doctor performs no writes.
   configure-on-demand settings.
 * `home/.tmux.conf` — `C-a` prefix, Alt-arrow navigation, TPM plus
   sensible/solarized.
-* `home/.omp/agent/` — spend-tuned `config.yml` mirror plus headroom `mcp.json`.
+* `home/.omp/agent/` — OMP `config.yml`, delegation `APPEND_SYSTEM.md`,
+  TypeScript `lsp.json`, and headroom `mcp.json`.
 * `home/.omp/agent/config.local.example.yml` and
   `models.local.example.yml` — provider-neutral loopback templates only; they
   are not copied automatically and contain no credentials or private paths.
 
-## OMP agent defaults
-
-* Applied with `cfg-tools-omp.sh`; keys mirror `home/.omp/agent/config.yml`.
-* Minimum spend: compaction at 280k/200k tokens, usage and cache-miss markers,
-  and tool-result imaging enabled.
-* Headroom MCP uses
-  `uv tool install --python 3.13 "headroom-ai[all]"` and stdio.
 * The generic gate script deliberately does not edit OMP routing. The separate
   Bonsai example applies model roles, per-agent overrides, and fallback chains
   only when explicitly run.
+
+## OMP agent defaults
+
+* Applied with `cfg-tools-omp.sh`: per-key OMP settings plus one Python merge
+  pass preserve unrelated user config.
+* configures compaction at 80%, retaining the 200k-token / 180-second idle
+  behavior, token usage and cache-miss markers, and snapcompact's auto shape,
+  no system prompt, and tool results
+* selects the native `typesafe/jev-latest` judge with the paid
+  `opencode-zen-jev/jev-1.13` retry fallback; model authentication/provider
+  credentials must already be configured. Provisioning does not download
+  models. The paid fallback is used to avoid treating uncalibrated Luna
+  prompted-judge confidence as authoritative.
+* enables task LSP and TypeScript server support (`typescript` and
+  `typescript-language-server@6.0.1` installed via Bun); `home/.omp/agent/lsp.json`
+  merges the named server into existing per-user server configuration.
+* provisions the delegation policy from `home/.omp/agent/APPEND_SYSTEM.md`:
+  benefit-based delegation, main-owned orchestration, bounded worker briefs,
+  capability/cost-aware selection, independent slices dispatched together,
+  and evidence-backed acceptance. Replaces only the `## Delegation policy`
+  section; preserves unrelated preprompt instructions and does not duplicate
+  the section on re-runs.
+* requires `omp`, Bun, and `uv`; the script installs `headroom-ai[all]` with
+  Python 3.13 using uv. Add Bun's global binary directory to `PATH` before
+  running the script.
+* Native OMP experimental context management remains disabled. Global OMP
+  notes remain disabled.
+
+## cmux link routing
+
+For external-only links, run `cmux disable-browser` and merge these preferences
+into `~/.config/cmux/cmux.json` (back up the existing file; preserve other keys):
+
+```json
+{
+  "browser": {
+    "openTerminalLinksInCmuxBrowser": false,
+    "interceptTerminalOpenCommandInCmuxBrowser": false
+  }
+}
+```
+
+Run `cmux reload-config` afterward. External links use the macOS default browser;
+select Google Chrome as the default for both HTTP and HTTPS for Chrome-only
+routing. On the current workstation, both already use `com.google.chrome`;
+an actual `cmux open` link was observed in Chrome with no internal browser surface.
 
 ## Optional local model gate
 
