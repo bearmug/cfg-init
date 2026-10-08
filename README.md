@@ -13,6 +13,7 @@ Debian/Ubuntu-first, with an explicit macOS Homebrew path.
 | `cfg-tools-tmux.sh` | tmux, `.tmux.conf`, and TPM plugin install | Installs TPM when missing, then plugins |
 | `cfg-tools-oh-my-zsh.sh` | zsh, Oh My Zsh, and two plugins | Canonical `ohmyzsh/ohmyzsh` URL; unattended and idempotent |
 | `cfg-tools-omp.sh` | OMP native judge, compaction, LSP + headroom MCP | merge-safe configuration and delegation preprompt |
+| `cfg-tools-telegram-intervention.sh` | portable Telegram intervention skill | explicit harness skill directory; environment-only credentials |
 | `cfg-tools-model-gate.sh` | Optional model-agnostic local Bun gate | Installs the proxy only; provider/model routing is separate |
 | `cfg-tools-model-gate-bonsai.sh` | Explicit Bonsai OMP routing example | Opt-in example; requires `omp` and `python3`; all values are overrideable |
 | `Brewfile` / `cfg-tools-macos.sh` | macOS Homebrew baseline | Requires Homebrew; `CFG_INIT_LOCAL_AI=1` adds optional Ollama and llama.cpp packages |
@@ -132,6 +133,58 @@ an actual `cmux open` link was observed in Chrome with no internal browser surfa
   is available it uses that helper, otherwise Git prompts normally.
 * CI checks shell syntax, the model-gate JavaScript, patch whitespace, and common
   private-key/token signatures in tracked files.
+
+## Telegram intervention skill
+
+`skills/telegram-intervention/` is a harness-agnostic skill for the primary case:
+user intervention is required to unblock current agent work. Completion alerts
+are optional. Python 3 is the only local runtime dependency.
+
+```sh
+./cfg-tools-telegram-intervention.sh /path/to/harness/skills
+```
+
+Choose the skill search path supported by your harness; the recipe deliberately
+does not assume OMP, Claude Code, Codex, or another harness. Existing skill files
+are backed up before replacement. Add the **Harness integration rule** from
+`SKILL.md` to persistent agent instructions so blockers trigger skill loading.
+For a harness without skill discovery, include `SKILL.md` in its instructions
+and give it the absolute path to `scripts/notify.py`.
+
+Configure the sender's environment through your harness secret store or launcher:
+
+| Variable | Purpose |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | required bot token; never commit or put in prompts |
+| `TELEGRAM_CHAT_ID` | required destination user/group ID |
+| `TELEGRAM_MESSAGE_THREAD_ID` | optional positive forum topic ID |
+| `TELEGRAM_NOTIFY_DONE` | set to `1` for verified completion alerts; off by default |
+
+Create your bot with Telegram's BotFather and start it from the destination user
+account (or add it to the group). Obtain the destination ID using Telegram tooling
+outside agent prompts; keep token-bearing API URLs out of logs. No credentials
+are bundled, generated, or persisted by this recipe or sender.
+
+Smoke the installed sender from the configured execution environment:
+
+```sh
+printf '%s\n' 'blocked: setup — confirm receipt in the agent thread.' \
+  | python3 /path/to/harness/skills/telegram-intervention/scripts/notify.py blocked
+```
+
+The sender uses HTTPS `sendMessage`, plain text, no link previews, and a 15-second
+network timeout. It exits nonzero on failure without printing secret-bearing
+URLs or response bodies. It does not retry ambiguous delivery failures.
+The agent owns per-blocker deduplication and sends completion once after
+verification (`done --force` permits an explicit one-off request).
+
+Validate integration by giving the harness a task that requires a user decision:
+it should open its native intervention UI, send one Telegram alert identifying
+the task/action, and wait without repeated alerts. Respond in the harness and
+verify work resumes. Telegram is notification-only: replies do not grant approval
+or resume agents. Skill instructions cannot enforce behavior in a harness that
+does not load them. No live Telegram delivery is verified by repository-only
+checks; deployment requires the separately supplied credentials and receipt check.
 
 ## Retired
 
