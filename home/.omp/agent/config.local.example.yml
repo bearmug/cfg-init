@@ -1,0 +1,23 @@
+# Optional local-backend tuning template; review before applying.
+# No provider credentials or machine-specific paths are included.
+providers:
+  streamFirstEventTimeoutSeconds: 600
+  streamIdleTimeoutSeconds: 600
+  maxInFlightRequests:
+    local-gate: 2
+    llama.cpp: 1
+    mlx: 1
+    ollama: 1
+modelRoles:
+  smol: local-gate/local-gate-model:medium
+  task: local-gate/local-gate-model:medium
+  review: local-gate/local-gate-model:medium
+task:
+  agentModelOverrides:
+    scout: local-gate/local-gate-model:medium
+    task: local-gate/local-gate-model:medium
+    sonic: local-gate/local-gate-model:medium
+    reviewer: local-gate/local-gate-model:medium
+retry:
+  modelFallback: true
+  usageAwareFallback: true

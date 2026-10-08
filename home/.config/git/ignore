@@ -1,0 +1,21 @@
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+
+# Editor and IDE metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Common local build output
+build/
+dist/
+target/
+*.o
+*.class
+
+# Local environment and secret material (keep examples tracked)
+.env
+.env.*
+!.env.example
