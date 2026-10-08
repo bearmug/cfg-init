@@ -19,6 +19,9 @@ jobs:
         with:
           node-version: 22
       - run: node --check home/.local/share/model-gate/model-gate-proxy.mjs
+      - name: Check feedback queue and approval boundary
+        working-directory: home/.agents/skills/dissatisfaction
+        run: python3 -m unittest -v test_feedback.py
       - name: Reject committed secret material
         shell: bash
         run: |

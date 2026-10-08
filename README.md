@@ -13,6 +13,7 @@ Debian/Ubuntu-first, with an explicit macOS Homebrew path.
 | `cfg-tools-tmux.sh` | tmux, `.tmux.conf`, and TPM plugin install | Installs TPM when missing, then plugins |
 | `cfg-tools-oh-my-zsh.sh` | zsh, Oh My Zsh, and two plugins | Canonical `ohmyzsh/ohmyzsh` URL; unattended and idempotent |
 | `cfg-tools-omp.sh` | OMP native judge, compaction, LSP + headroom MCP | merge-safe configuration and delegation preprompt |
+| `cfg-tools-feedback.sh` | portable dissatisfaction skill + OMP/T3 adapters | tiny local MLX scorer on macOS; approval-gated worktrees |
 | `cfg-tools-telegram-intervention.sh` | portable Telegram intervention skill | explicit harness skill directory; environment-only credentials |
 | `cfg-tools-model-gate.sh` | Optional model-agnostic local Bun gate | Installs the proxy only; provider/model routing is separate |
 | `cfg-tools-model-gate-bonsai.sh` | Explicit Bonsai OMP routing example | Opt-in example; requires `omp` and `python3`; all values are overrideable |
@@ -38,8 +39,8 @@ recipe; the doctor performs no writes.
 * Prefer per-key/appends over whole-file overwrites for user-owned config.
 * Linux package recipes target Debian or Ubuntu. macOS uses `Brewfile`; it does
   not run `apt` recipes.
-* Optional local-AI packages install runtimes only. cfg-init never downloads
-  model weights.
+* Optional local-AI packages install runtimes only. The feedback scorer's first
+  inference separately downloads its configured model weights.
 
 ## Starter configs
 
@@ -185,6 +186,97 @@ verify work resumes. Telegram is notification-only: replies do not grant approva
 or resume agents. Skill instructions cannot enforce behavior in a harness that
 does not load them. No live Telegram delivery is verified by repository-only
 checks; deployment requires the separately supplied credentials and receipt check.
+
+
+## Actionable dissatisfaction
+
+Run `./cfg-tools-feedback.sh` to install the harness-independent skill under
+`~/.agents/skills/dissatisfaction`, OMP discovery under `~/.omp/agent/skills`,
+and the OMP extension. On macOS it also installs a launchd-supervised,
+loopback-only MLX server (`org.bearmug.feedback-model`, port 8086).
+Use `--skip-model` with an existing local OpenAI-compatible backend.
+The first inference downloads model weights; inference does not send prompts
+to a remote scoring service.
+
+The scorer is **Qwen3-1.7B, 4-bit, thinking disabled**, not Jev. One-token
+YES/NO decoding is constrained with equal logit bias; the two token
+log-likelihoods are normalized into a 0–1 score. This is **not an empirically
+calibrated probability**. It avoids unreliable generated numeric JSON and
+limits decoding work. Few-shot examples cover assistant criticism, praise,
+neutral requests and external complaints. Terse reactions can still be missed,
+and instruction-like text can score falsely high; screening is a second gate.
+The Chrome slop-highlighter uses a Jev-distilled ModernBERT 149M head via
+WebGPU; its slop/AI-authorship axis is not a dissatisfaction score.
+The 0.5B candidate failed direct-criticism probes and was rejected.
+No energy-consumption claim is made: small weights and serialized inference
+limit resources, but watts have not been measured.
+
+Every ingress adapter sends the same JSON event to `feedback.py submit`.
+It persists an event and starts a detached, single-consumer worker; model
+inference and screening never wait on the main agent turn. Failures remain
+visible in `status`. A score at least 0.8 (configurable) triggers a
+tool-free OMP screening agent to decide actual actionability, using the configured
+`openai-codex/gpt-6-luna` model. **High-scoring prompts/context
+are sent to that model's provider**; low-scoring prompts stay local.
+Override the screening command/model if remote screening is unwanted.
+Screening uses an isolated per-run fallback override: the selected model
+either succeeds or fails visibly; it is never silently replaced. The Muse
+Spark candidate returned 403 during the live smoke and was rejected.
+The local backend must support `logit_bias`, `logprobs` and `top_logprobs`.
+For a different model, set `FEEDBACK_LABEL_TOKENS` to its single-token YES/NO
+IDs; the default Qwen3 tokenizer was verified as YES=14004 and NO=8996.
+Missing/invalid likelihoods fail visibly, with no fabricated fallback.
+
+Questions stay in the queue; `/feedback` shows them without starting a model
+turn. `/feedback resolve EVENT_ID ANSWER` resumes screening. Only the exact
+answer `approve` authorizes implementation, in a new Git worktree; nothing
+is merged, pushed, or applied to the active checkout automatically. This is
+process/workspace separation, **not an OS security sandbox**. Approval runs
+a tool-enabled agent; review its work before merging. Unsaved changes in the
+original checkout are not copied into the worktree.
+On macOS, pending questions and review-ready work trigger a native notification;
+the queue remains authoritative if notifications are hidden by Focus/settings.
+`FEEDBACK_NOTIFY_COMMAND` is a JSON argv array receiving one text argument.
+Set it to `""` to disable, or `["tg-notify"]` to opt into Telegram alerts.
+Notification errors stay visible and never retry completed screening/work.
+
+### T3 / ACP coverage
+
+OMP's `input` extension event covers interactive submissions, not raw ACP
+ingress. For T3, set the existing OMP provider's `commandPath` to
+`~/.local/bin/omp-feedback` (an absolute expanded path) and keep `commandArgs`
+as `["acp"]`. New ACP processes use the transparent relay, which observes
+`session/prompt` before command routing and preserves normal protocol bytes.
+The relay handles `/feedback` locally and emits an ACP assistant-message update,
+because OMP custom command messages are not forwarded visibly by ACP.
+Existing sessions must reconnect before they can use a newly installed relay.
+The wrapper records text prompts plus bounded prior assistant text; images
+are not interpreted. Its queue-overflow warning explicitly identifies an
+unscored prompt rather than pretending full coverage.
+T3's injected instruction envelope is removed before scoring the user request.
+Long text is bounded to its first 2,000 and last 6,000 characters, with an
+explicit stderr notice. This is text-only bounded coverage, not full-image or
+unlimited-transcript understanding.
+
+Configuration is merge-installed at `~/.config/cfg-init-feedback/config.json`.
+`FEEDBACK_DISABLED=1` disables observation; `FEEDBACK_MODEL_URL` and
+`FEEDBACK_MODEL` select the local backend. Screening subprocesses disable
+extensions, skills, rules, session persistence, and ambient system-prompt
+files to prevent recursion and unrelated repository assumptions.
+See the skill for queue protocol, retention, threshold, timeouts and retry
+controls. Inspect status from any harness:
+
+```sh
+python3 ~/.agents/skills/dissatisfaction/feedback.py status
+```
+
+Stop the macOS scorer with
+`launchctl bootout gui/$(id -u)/org.bearmug.feedback-model`; reinstalling starts
+it again. Removing the extension and restoring T3's original OMP command
+disables ingress observation without deleting queued evidence.
+
+CI runs the deterministic feedback queue and literal-approval regression suite:
+`cd home/.agents/skills/dissatisfaction && python3 -m unittest -v test_feedback.py`.
 
 ## Retired
 
