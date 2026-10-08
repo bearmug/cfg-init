@@ -10,6 +10,23 @@ import threading
 import uuid
 
 
+def t3_choice_enums(message):
+    """Expose equivalent scalar enums for T3 versions that do not read oneOf."""
+    if message.get("method") != "elicitation/create":
+        return False
+    properties = message.get("params", {}).get("requestedSchema", {}).get("properties", {})
+    changed = False
+    for field in properties.values():
+        choices = field.get("oneOf")
+        if field.get("type") != "string" or "enum" in field or not isinstance(choices, list) or not choices:
+            continue
+        if all(isinstance(choice, dict) and isinstance(choice.get("const"), str)
+               and set(choice) <= {"const", "title", "description", "_meta"} for choice in choices):
+            field["enum"] = [choice["const"] for choice in choices]
+            del field["oneOf"]
+            changed = True
+    return changed
+
 def main():
     config_path = Path.home() / ".config/cfg-init-feedback/config.json"
     config = json.loads(config_path.read_text()) if config_path.exists() else {}
@@ -38,10 +55,18 @@ def main():
             if event is None:
                 return
             try:
-                result = subprocess.run([sys.executable, str(engine), "submit"], input=json.dumps(event),
-                                        text=True, capture_output=True, env=environment, timeout=10)
+                followup = event.get("resolve_event_id")
+                if followup:
+                    subprocess.run([sys.executable, str(engine), "worker"], env=environment,
+                                   check=True, capture_output=True, timeout=900)
+                args = ["status", followup] if followup else ["submit", "--wait"]
+                result = subprocess.run([sys.executable, str(engine), *args],
+                                        input=None if followup else json.dumps(event),
+                                        text=True, capture_output=True, env=environment, timeout=900)
                 if result.returncode:
                     print("feedback enqueue failed: " + result.stderr[-500:], file=sys.stderr, flush=True)
+                else:
+                    present(json.loads(result.stdout))
             except Exception as error:
                 print("feedback enqueue failed: " + str(error), file=sys.stderr, flush=True)
             finally:
@@ -54,6 +79,35 @@ def main():
         with output_lock:
             sys.stdout.buffer.write(json.dumps(message).encode() + b"\n")
             sys.stdout.buffer.flush()
+
+    def present(proposal, replay=False):
+        if proposal.get("state") != "needs_approval":
+            return
+        raw = environment.get("FEEDBACK_PRESENT_COMMAND")
+        if raw:
+            command = json.loads(raw)
+            if not isinstance(command, list) or not command or any(
+                not isinstance(arg, str) or not arg for arg in command
+            ):
+                raise ValueError("FEEDBACK_PRESENT_COMMAND must be an argv JSON array")
+        elif environment.get("T3_ACP_MCP_NODE"):
+            command = [sys.executable, str(Path(__file__).with_name("present_t3.py"))]
+            if replay:
+                command.append("--replay")
+        else:
+            return  # No supported native presenter: the durable queue remains available.
+        result = subprocess.run(command, input=json.dumps(proposal), env=environment,
+                                capture_output=True, text=True, timeout=90)
+        if result.returncode:
+            print("feedback choice unavailable: " + result.stderr[-500:], file=sys.stderr, flush=True)
+            return
+        delivery = json.loads(result.stdout)
+        if delivery.get("childThreadId"):
+            emit({"jsonrpc": "2.0", "method": "session/update", "params": {
+                "sessionId": proposal["session_id"], "update": {
+                    "sessionUpdate": "agent_message_chunk", "content": {"type": "text",
+                    "text": f"Improvement decision: [Yes/No choice agent](t3-thread://v1/{delivery['childThreadId']}). "
+                            "The main conversation can continue; approved work runs separately."}}}})
 
     def feedback_command(message, text):
         parts = text.split(maxsplit=3)
@@ -68,6 +122,15 @@ def main():
         result = subprocess.run([sys.executable, str(engine), *args], env=environment,
                                 capture_output=True, text=True, timeout=10)
         content = result.stdout if result.returncode == 0 else result.stderr
+        if result.returncode == 0:
+            if args[0] == "resolve":
+                observations.put({"resolve_event_id": parts[2]})
+            else:
+                payload = json.loads(result.stdout)
+                proposals = payload.get("events", [payload])
+                for proposal in proposals:
+                    if proposal.get("session_id") == message["params"]["sessionId"]:
+                        present(proposal, replay=True)
         emit({"jsonrpc": "2.0", "method": "session/update", "params": {
             "sessionId": message["params"]["sessionId"], "update": {
                 "sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": content}}}})
@@ -75,7 +138,13 @@ def main():
 
     def receive():
         for line in child.stdout:
-            # Preserve exact protocol bytes, including unfamiliar extension messages.
+            # Preserve protocol bytes except equivalent T3 scalar choice enums.
+            try:
+                translated = json.loads(line)
+                if environment.get("T3_ACP_MCP_NODE") and t3_choice_enums(translated):
+                    line = json.dumps(translated).encode() + b"\n"
+            except (ValueError, TypeError, AttributeError):
+                pass
             with output_lock:
                 sys.stdout.buffer.write(line)
                 sys.stdout.buffer.flush()

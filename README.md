@@ -227,13 +227,17 @@ For a different model, set `FEEDBACK_LABEL_TOKENS` to its single-token YES/NO
 IDs; the default Qwen3 tokenizer was verified as YES=14004 and NO=8996.
 Missing/invalid likelihoods fail visibly, with no fabricated fallback.
 
-Questions stay in the queue; `/feedback` shows them without starting a model
-turn. `/feedback resolve EVENT_ID ANSWER` resumes screening. Only the exact
-answer `approve` authorizes implementation, in a new Git worktree; nothing
-is merged, pushed, or applied to the active checkout automatically. This is
-process/workspace separation, **not an OS security sandbox**. Approval runs
-a tool-enabled agent; review its work before merging. Unsaved changes in the
-original checkout are not copied into the worktree.
+Screened, concrete improvements enter `needs_approval` and arrive with an
+explanation and **Yes / No** choices in the originating harness. Yes authorizes
+only that proposal; No declines it; dismissing the choice leaves it pending.
+The main conversation stays on its original topic. Approved work runs in a fresh
+agent process and separate Git worktree, returning uncommitted changes and a report
+for review. Nothing is installed, merged, pushed, or applied to the original
+checkout automatically. This is **not an OS security sandbox**.
+Missing details still use `needs_input`. `/feedback` recovers pending choices;
+`/feedback resolve EVENT_ID ANSWER` remains available for clarification/review.
+Decisions are bound to an event and approval token, so stale or repeated choices
+cannot authorize a different proposal or launch duplicate work.
 On macOS, pending questions and review-ready work trigger a native notification;
 the queue remains authoritative if notifications are hidden by Focus/settings.
 `FEEDBACK_NOTIFY_COMMAND` is a JSON argv array receiving one text argument.
@@ -245,8 +249,11 @@ Notification errors stay visible and never retry completed screening/work.
 OMP's `input` extension event covers interactive submissions, not raw ACP
 ingress. For T3, set the existing OMP provider's `commandPath` to
 `~/.local/bin/omp-feedback` (an absolute expanded path) and keep `commandArgs`
-as `["acp"]`. New ACP processes use the transparent relay, which observes
-`session/prompt` before command routing and preserves normal protocol bytes.
+`["acp"]`. New ACP processes use the relay, which observes `session/prompt`
+before command routing. T3 caller credentials stay in session memory, never
+feedback records. For T3 scalar questions it converts plain `oneOf` choices
+to an equivalent `enum`, because current T3 does not render `oneOf` choices.
+Other protocol messages retain their original bytes.
 The relay handles `/feedback` locally and emits an ACP assistant-message update,
 because OMP custom command messages are not forwarded visibly by ACP.
 Existing sessions must reconnect before they can use a newly installed relay.
@@ -257,6 +264,16 @@ T3's injected instruction envelope is removed before scoring the user request.
 Long text is bounded to its first 2,000 and last 6,000 characters, with an
 explicit stderr notice. This is text-only bounded coverage, not full-image or
 unlimited-transcript understanding.
+
+OMP uses its native selector. In T3, a choice-only child agent presents the explained
+Yes/No question through the supported task interface; the main agent does not switch
+tasks or implement the suggestion. The adapters obtain their own screened result
+in a background subprocess—no polling, socket broker, or presentation daemon.
+Other ACP harnesses can configure `FEEDBACK_PRESENT_COMMAND`, a JSON argv presenter
+receiving the public proposal on stdin. Unsupported hosts retain pending proposals
+in `/feedback` rather than pretending to display a card.
+`FEEDBACK_IMPLEMENT_COMMAND` can select a different independent implementation
+agent. See the skill for its stdin/stdout and worktree contract.
 
 Configuration is merge-installed at `~/.config/cfg-init-feedback/config.json`.
 `FEEDBACK_DISABLED=1` disables observation; `FEEDBACK_MODEL_URL` and
@@ -275,8 +292,9 @@ Stop the macOS scorer with
 it again. Removing the extension and restoring T3's original OMP command
 disables ingress observation without deleting queued evidence.
 
-CI runs the deterministic feedback queue and literal-approval regression suite:
-`cd home/.agents/skills/dissatisfaction && python3 -m unittest -v test_feedback.py`.
+CI runs the deterministic feedback queue, approval safety, ACP, and isolated
+implementation regressions:
+`python3 -m unittest discover -s home/.agents/skills/dissatisfaction -v`.
 
 ## Retired
 
