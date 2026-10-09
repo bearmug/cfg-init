@@ -22,6 +22,9 @@ jobs:
       - name: Check feedback queue and approval boundary
         working-directory: home/.agents/skills/dissatisfaction
         run: python3 -m unittest -v test_feedback.py
+      - name: Check T3 routing and child interaction boundaries
+        working-directory: home/.local/share/cfg-init-feedback
+        run: python3 -m unittest -v test_t3_policy.py
       - name: Check feedback adapter syntax
         run: python3 -m py_compile home/.local/share/cfg-init-feedback/*.py
       - name: Reject committed secret material

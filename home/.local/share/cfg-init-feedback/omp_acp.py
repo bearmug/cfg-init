@@ -8,6 +8,7 @@ import subprocess
 import sys
 import threading
 import uuid
+import t3_policy
 
 
 def t3_choice_enums(message):
@@ -39,7 +40,10 @@ def main():
     engine = Path.home() / ".agents/skills/dissatisfaction/feedback.py"
     if sys.argv[1:] != ["acp"]:
         os.execv(real_omp, [real_omp, *sys.argv[1:]])
-    child = subprocess.Popen([real_omp, "acp"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=environment)
+    args = [real_omp, "acp"]
+    if environment.get("T3_ACP_MCP_NODE"):
+        args += ["--config", str(Path.home() / ".omp/agent/t3.yml")]
+    child = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=environment)
     pending = {}
     sessions = {}
     last_response = {}
@@ -48,6 +52,20 @@ def main():
     output_lock = threading.Lock()
     enabled = environment.get("FEEDBACK_DISABLED") != "1"
     connection_id = str(uuid.uuid4())
+    worker_thread = None
+    input_lock = threading.Lock()
+
+    def send(message):
+        with input_lock:
+            child.stdin.write(json.dumps(message).encode() + b"\n")
+            child.stdin.flush()
+
+    def worker_context():
+        nonlocal worker_thread
+        if worker_thread is None and environment.get("T3_ACP_MCP_NODE"):
+            _, thread, is_worker = t3_policy.context()
+            worker_thread = thread if is_worker else False
+        return worker_thread
 
     def submitter():
         while True:
@@ -81,33 +99,34 @@ def main():
             sys.stdout.buffer.flush()
 
     def present(proposal, replay=False):
-        if proposal.get("state") != "needs_approval":
+        if proposal.get("state") != "needs_approval" or worker_context():
             return
-        raw = environment.get("FEEDBACK_PRESENT_COMMAND")
-        if raw:
-            command = json.loads(raw)
-            if not isinstance(command, list) or not command or any(
-                not isinstance(arg, str) or not arg for arg in command
-            ):
-                raise ValueError("FEEDBACK_PRESENT_COMMAND must be an argv JSON array")
-        elif environment.get("T3_ACP_MCP_NODE"):
-            command = [sys.executable, str(Path(__file__).with_name("present_t3.py"))]
+        # No choice-only child: the coordinator owns the user decision.
+        text = (f"Improvement proposal ({proposal['event_id']}): {proposal['summary']}\n\n"
+                f"{proposal['question']}\n"
+                "Coordinator: present an explained Yes/No choice here. Never infer consent. "
+                "After explicit consent only, run the feedback engine's decide command with "
+                f"event_id={proposal['event_id']} and approval_id={proposal['approval_id']}. "
+                "Approval queues isolated work; it does not install, push or merge.")
+        if environment.get("T3_ACP_MCP_NODE"):
+            capabilities, _, _ = t3_policy.context()
+            key = f"feedback-coordinator:{proposal['event_id']}:{proposal['approval_id']}"
             if replay:
-                command.append("--replay")
-        else:
-            return  # No supported native presenter: the durable queue remains available.
-        result = subprocess.run(command, input=json.dumps(proposal), env=environment,
-                                capture_output=True, text=True, timeout=90)
-        if result.returncode:
-            print("feedback choice unavailable: " + result.stderr[-500:], file=sys.stderr, flush=True)
+                key += ":" + uuid.uuid4().hex
+            t3_policy.call("t3_thread_send", {"threadId": capabilities["parentThreadId"],
+                           "message": text, "mode": "auto", "clientRequestId": key})
             return
-        delivery = json.loads(result.stdout)
-        if delivery.get("childThreadId"):
-            emit({"jsonrpc": "2.0", "method": "session/update", "params": {
-                "sessionId": proposal["session_id"], "update": {
-                    "sessionUpdate": "agent_message_chunk", "content": {"type": "text",
-                    "text": f"Improvement decision: [Yes/No choice agent](t3-thread://v1/{delivery['childThreadId']}). "
-                            "The main conversation can continue; approved work runs separately."}}}})
+        if environment.get("FEEDBACK_PRESENT_COMMAND"):
+            command = json.loads(environment["FEEDBACK_PRESENT_COMMAND"])
+            if not isinstance(command, list) or not command or any(
+                    not isinstance(arg, str) or not arg for arg in command):
+                raise ValueError("FEEDBACK_PRESENT_COMMAND must be an argv JSON array")
+            subprocess.run(command, input=json.dumps(proposal), env=environment,
+                           capture_output=True, text=True, timeout=90, check=True)
+            return
+        emit({"jsonrpc": "2.0", "method": "session/update", "params": {
+            "sessionId": proposal["session_id"], "update": {
+                "sessionUpdate": "agent_message_chunk", "content": {"type": "text", "text": text}}}})
 
     def feedback_command(message, text):
         parts = text.split(maxsplit=3)
@@ -141,6 +160,15 @@ def main():
             # Preserve protocol bytes except equivalent T3 scalar choice enums.
             try:
                 translated = json.loads(line)
+                if worker_thread and translated.get("method") == "elicitation/create":
+                    result = {"action": "cancel"}
+                    send({"jsonrpc": "2.0", "id": translated["id"], "result": result})
+                    emit({"jsonrpc": "2.0", "method": "session/update", "params": {
+                        "sessionId": translated.get("params", {}).get("sessionId"),
+                        "update": {"sessionUpdate": "agent_message_chunk", "content": {
+                            "type": "text", "text": "BLOCKED: child question cancelled; "
+                            "coordinator must resolve the missing decision. Security permissions remain host-owned."}}}})
+                    continue
                 if environment.get("T3_ACP_MCP_NODE") and t3_choice_enums(translated):
                     line = json.dumps(translated).encode() + b"\n"
             except (ValueError, TypeError, AttributeError):
@@ -176,6 +204,21 @@ def main():
                 message = json.loads(line)
                 params = message.get("params", {})
                 method = message.get("method")
+                if method == "session/prompt" and environment.get("T3_ACP_MCP_NODE"):
+                    try:
+                        thread = worker_context()
+                    except Exception as error:
+                        emit({"jsonrpc": "2.0", "id": message["id"], "error": {
+                            "code": -32000, "message": "Cannot verify T3 lineage; prompt refused: " + str(error)}})
+                        continue
+                    if thread and (thread.get("runCount") != 1 or sessions.get("_worker_prompt_seen")):
+                        emit({"jsonrpc": "2.0", "id": message["id"], "error": {
+                            "code": -32000, "message": "Child input disabled; continue through the coordinator with a new task"}})
+                        continue
+                    if thread:
+                        sessions["_worker_prompt_seen"] = True
+                        params["prompt"].insert(0, {"type": "text", "text": t3_policy.WORKER_RULES})
+                        line = json.dumps(message).encode() + b"\n"
                 with lock:
                     if method in ("session/new", "session/load", "session/resume") and "id" in message:
                         pending[message["id"]] = params
@@ -196,7 +239,7 @@ def main():
                                  "session_id": sid, "prompt": text, "cwd": sessions.get(sid, os.getcwd()),
                                  "assistant_context": last_response.pop(sid, "")[-2000:]}
                         try:
-                            if enabled:
+                            if enabled and not worker_thread:
                                 observations.put_nowait(event)
                         except queue.Full:
                             print("feedback observation queue full; prompt was not scored", file=sys.stderr, flush=True)
@@ -205,8 +248,9 @@ def main():
                     continue
             except (ValueError, TypeError, KeyError):
                 pass
-            child.stdin.write(line)
-            child.stdin.flush()
+            with input_lock:
+                child.stdin.write(line)
+                child.stdin.flush()
     finally:
         child.stdin.close()
         observations.join()

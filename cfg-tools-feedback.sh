@@ -8,7 +8,7 @@ export FEEDBACK_PYTHON="$(command -v python3)"
 export FEEDBACK_OMP_BIN="$(command -v omp)"
 export FEEDBACK_SOURCE="$ROOT_DIR"
 python3 - <<'PY'
-import json, os, shutil, sys
+import json, os, re, shutil, sys
 from pathlib import Path
 root, home = Path(os.environ['FEEDBACK_SOURCE']), Path.home()
 for relative in ('.agents/skills/dissatisfaction', '.local/share/cfg-init-feedback'):
@@ -30,12 +30,37 @@ if target.exists() and target.read_bytes() != source.read_bytes():
 shutil.copy2(source, target)
 extensions = home / '.omp/agent/extensions'
 extensions.mkdir(parents=True, exist_ok=True)
-source = root / 'home/.omp/agent/extensions/dissatisfaction.ts'
-target = extensions / source.name
+for name in ('dissatisfaction.ts', 't3-coordinator.ts'):
+    source = root / 'home/.omp/agent/extensions' / name
+    target = extensions / name
+    if target.exists() and target.read_bytes() != source.read_bytes():
+        from datetime import datetime
+        shutil.copy2(target, str(target) + '.bak-' + datetime.now().strftime('%Y%m%d%H%M%S'))
+    shutil.copy2(source, target)
+source, target = root / 'home/.omp/agent/t3.yml', home / '.omp/agent/t3.yml'
 if target.exists() and target.read_bytes() != source.read_bytes():
     from datetime import datetime
     shutil.copy2(target, str(target) + '.bak-' + datetime.now().strftime('%Y%m%d%H%M%S'))
 shutil.copy2(source, target)
+path = home / '.omp/agent/APPEND_SYSTEM.md'
+section = (root / 'home/.omp/agent/APPEND_SYSTEM.md').read_text()
+original = path.read_text() if path.exists() else ''
+match = re.search(r'(?m)^## Delegation policy[ \t]*\r?$', original)
+if match:
+    next_heading = re.search(r'(?m)^#{1,2}[ \t]+', original[match.end():])
+    end = match.end() + next_heading.start() if next_heading else len(original)
+    updated = original[:match.start()] + section + original[end:]
+else:
+    updated = original.rstrip() + ('\n\n' if original else '') + section
+if path.exists() and original != updated:
+    from datetime import datetime
+    shutil.copy2(path, str(path) + '.bak-' + datetime.now().strftime('%Y%m%d%H%M%S'))
+path.write_text(updated)
+obsolete = home / '.local/share/cfg-init-feedback/present_t3.py'
+if obsolete.exists():
+    from datetime import datetime
+    shutil.copy2(obsolete, str(obsolete) + '.bak-' + datetime.now().strftime('%Y%m%d%H%M%S'))
+    obsolete.unlink()
 config_path = home / '.config/cfg-init-feedback/config.json'
 config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
 config = json.loads(config_path.read_text()) if config_path.exists() else {}
@@ -46,6 +71,7 @@ defaults = {
     'FEEDBACK_MODEL': 'mlx-community/Qwen3-1.7B-4bit',
     'FEEDBACK_SCREEN_COMMAND': json.dumps([os.environ['FEEDBACK_PYTHON'], str(home / '.local/share/cfg-init-feedback/screen_omp.py')]),
     'FEEDBACK_SCREEN_MODEL': 'openai-codex/gpt-6-luna',
+    'FEEDBACK_IMPLEMENT_MODEL': 'openai-codex/gpt-6.1-sol',
     'FEEDBACK_SCREEN_TIMEOUT': '660',
 }
 if sys.platform == 'darwin':

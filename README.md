@@ -89,6 +89,61 @@ recipe; the doctor performs no writes.
 * Native OMP experimental context management remains disabled. Global OMP
   notes remain disabled.
 
+### T3 coordinator-owned OMP workers
+
+`cfg-tools-feedback.sh --skip-model` also installs the T3 routing helper, ACP
+worker ingress guard, OMP execution-time extension, and `~/.omp/agent/t3.yml`.
+It merge-updates only the delegation preprompt section and backs up changed
+payloads. Keep T3's OMP `commandPath` on the installed `omp-feedback` launcher;
+new ACP processes pick up these changes. Standalone OMP settings are untouched.
+
+Default child selection is **OMP / Sol 6.1 / thinking auto**. Sequential
+bugfixes and consequential uncertainty stay on Sol. Deliberately choose
+`economy` for bounded extraction or mechanical work; it selects OMP Luna 6,
+not an automatic downgrade. User pins use `pinned` with explicit provider,
+model, supported options, and reason. There is no silent model fallback.
+
+From the coordinator, send assignment JSON on stdin:
+
+```sh
+python3 ~/.local/share/cfg-init-feedback/t3_policy.py delegate <<'JSON'
+{
+  "task": "Inspect the specified issue. Include source references, constraints, owned paths, interfaces, deliverable and acceptance checks here.",
+  "title": "[sub] [bugs] inspect bounded issue",
+  "role": "research",
+  "clientRequestId": "bounded-issue-round-1"
+}
+JSON
+```
+
+Add `"lane":"economy","reason":"bounded read-only extraction"` to select Luna.
+For a user pin, add `"lane":"pinned"`, a reason, and `"target"` with
+`providerInstanceId`, `model`, and an options object. The helper resolves the
+live catalog, injects worker constraints, checks the returned model/options,
+and cancels unverified launches. Its private
+`~/.local/state/cfg-init-t3/delegations.jsonl` journal (or `XDG_STATE_HOME`)
+records requested/resolved selection, routing reason and task/thread IDs,
+not assignment bodies or host credentials. Retain IDs; consume results through
+T3's normal task lifecycle instead of polling.
+
+Workers return questions and missing permissions as **BLOCKED** to the
+coordinator. They do not spawn descendants or ask users. The relay rejects
+additional child prompts, including after reconnect, and cancels question
+elicitations. Answers require a new bounded delegation round, not a continued
+child thread. The extension blocks native spawning and child question,
+thread-creation and scheduling routes; the helper refuses child delegation.
+Feedback screening does not recursively observe child tasks.
+
+**Host limits:** T3 still displays app-owned child composers; cfg-init rejects
+input at ACP ingress rather than hiding the UI. Security permission requests
+and responses pass unchanged to T3, so required host approval UI is an
+intentional exception—not an ordinary worker question or fabricated consent.
+Full server-side recursion prevention and relocating security approvals require
+T3 changes. These cooperative guards are not a sandbox: unrestricted shell code,
+raw authenticated API calls, and explicitly pinned other harnesses can bypass
+local OMP hooks. Do not claim application-wide enforcement.
+
+
 ## cmux link routing
 
 For external-only links, run `cmux disable-browser` and merge these preferences
@@ -253,7 +308,8 @@ ingress. For T3, set the existing OMP provider's `commandPath` to
 before command routing. T3 caller credentials stay in session memory, never
 feedback records. For T3 scalar questions it converts plain `oneOf` choices
 to an equivalent `enum`, because current T3 does not render `oneOf` choices.
-Other protocol messages retain their original bytes.
+Other protocol messages retain their original bytes except the worker guards
+documented above; security permissions remain unchanged.
 The relay handles `/feedback` locally and emits an ACP assistant-message update,
 because OMP custom command messages are not forwarded visibly by ACP.
 Existing sessions must reconnect before they can use a newly installed relay.
@@ -265,10 +321,12 @@ Long text is bounded to its first 2,000 and last 6,000 characters, with an
 explicit stderr notice. This is text-only bounded coverage, not full-image or
 unlimited-transcript understanding.
 
-OMP uses its native selector. In T3, a choice-only child agent presents the explained
-Yes/No question through the supported task interface; the main agent does not switch
-tasks or implement the suggestion. The adapters obtain their own screened result
-in a background subprocess—no polling, socket broker, or presentation daemon.
+OMP interactive mode uses its native selector. In T3, screened proposals return
+to the coordinator through caller-bound `t3_thread_send`; the coordinator asks
+the explained Yes/No question in the main conversation and records only an
+explicit decision. No choice-only child is created. Child prompts are not
+scored. The adapters obtain their own screened result in a background
+subprocess—no polling, socket broker, or presentation daemon.
 Other ACP harnesses can configure `FEEDBACK_PRESENT_COMMAND`, a JSON argv presenter
 receiving the public proposal on stdin. Unsupported hosts retain pending proposals
 in `/feedback` rather than pretending to display a card.
@@ -280,6 +338,10 @@ Configuration is merge-installed at `~/.config/cfg-init-feedback/config.json`.
 `FEEDBACK_MODEL` select the local backend. Screening subprocesses disable
 extensions, skills, rules, session persistence, and ambient system-prompt
 files to prevent recursion and unrelated repository assumptions.
+Screening is deliberately tool-free Luna work. Approved implementation defaults
+to Sol 6.1 with auto thinking (`FEEDBACK_IMPLEMENT_MODEL` can explicitly pin it);
+it no longer inherits the screening model. Both phases disable model fallback
+and strip inherited caller-bound T3 credentials from the standalone process.
 See the skill for queue protocol, retention, threshold, timeouts and retry
 controls. Inspect status from any harness:
 
