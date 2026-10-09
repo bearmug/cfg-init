@@ -10,18 +10,20 @@ import sys
 import tempfile
 
 
-def invoke(prompt, cwd, tools="", timeout=180):
-    model = os.environ.get("FEEDBACK_SCREEN_MODEL", "openai-codex/gpt-6-luna")
+def invoke(prompt, cwd, tools="", timeout=180, model=None, thinking="low"):
+    model = model or os.environ.get("FEEDBACK_SCREEN_MODEL", "openai-codex/gpt-6-luna")
     command = [os.environ.get("FEEDBACK_OMP_BIN", "omp"), "--no-extensions", "--no-skills", "--no-rules", "--no-session",
                "--no-title", "--model", model,
                "--system-prompt", "You are a bounded feedback improvement worker. Follow the supplied task only. "
-               "No ambient repository or prior-session assumptions. Never claim unobserved work.",
-               "--thinking", "low", "--tools", tools, "--max-time", str(timeout), "-p", prompt]
+               "No ambient repository or prior-session assumptions. Never claim unobserved work. "
+               "No agents, threads, questions or dialogs; return missing decisions to coordinator.",
+               "--thinking", thinking, "--tools", tools, "--max-time", str(timeout), "-p", prompt]
     with tempfile.TemporaryDirectory(prefix="feedback-omp-") as directory:
         overlay = Path(directory) / "config.json"
-        overlay.write_text(json.dumps({"retry": {"fallbackChains": {model: [], "default": []}}}))
+        overlay.write_text(json.dumps({"retry": {"modelFallback": False, "usageAwareFallback": False}}))
         command[1:1] = ["--config", str(overlay)]
-        result = subprocess.run(command, cwd=cwd, stdin=subprocess.DEVNULL,
+        environment = {key: value for key, value in os.environ.items() if not key.startswith("T3_ACP_MCP_")}
+        result = subprocess.run(command, cwd=cwd, stdin=subprocess.DEVNULL, env=environment,
                                 text=True, capture_output=True, timeout=timeout + 15)
     if result.returncode:
         raise RuntimeError(result.stderr[-2000:] or result.stdout[-2000:])
@@ -119,7 +121,9 @@ def implement(event):
               'Return an honest concise report with changed files, checks actually run, and blockers.\n' +
               json.dumps({"approved_proposal": proposal, "event_id": event["event_id"], "cwd": event.get("cwd")}))
     alternate = implement_command(event, worktree)
-    report = alternate["summary"] if alternate else invoke(prompt, str(worktree), "read,grep,find,glob,bash,edit,write", 600)
+    report = alternate["summary"] if alternate else invoke(
+        prompt, str(worktree), "read,grep,find,glob,bash,edit,write", 600,
+        model=os.environ.get("FEEDBACK_IMPLEMENT_MODEL", "openai-codex/gpt-6.1-sol"), thinking="auto")
     reports = state / "reports"
     reports.mkdir(parents=True, exist_ok=True, mode=0o700)
     report_path = reports / (key + ".txt")

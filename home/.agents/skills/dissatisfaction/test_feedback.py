@@ -313,7 +313,8 @@ class AcpRelayTest(unittest.TestCase):
         relay = Path(__file__).resolve().parents[3] / ".local/share/cfg-init-feedback/omp_acp.py"
         spec = importlib.util.spec_from_file_location("omp_acp", relay)
         adapter = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(adapter)
+        with patch.object(sys, "path", [str(relay.parent), *sys.path]):
+            spec.loader.exec_module(adapter)
         choices = [{"const": "Yes", "title": "Approve", "description": "Queue separate work."},
                    {"const": "No", "title": "Decline", "description": "Do not queue work."}]
         message = {"method": "elicitation/create", "params": {"requestedSchema": {
@@ -362,7 +363,7 @@ class AcpRelayTest(unittest.TestCase):
                 [sys.executable, str(relay), "acp"],
                 input="".join(json.dumps(message) + "\n" for message in messages),
                 env={**os.environ, "HOME": str(home), "FEEDBACK_OMP_BIN": str(child),
-                     "FEEDBACK_DISABLED": "0"},
+                     "FEEDBACK_DISABLED": "0", "T3_ACP_MCP_NODE": ""},
                 capture_output=True, text=True, check=True, timeout=10,
             )
             events = [json.loads(line) for line in (home / "events.jsonl").read_text().splitlines()]
