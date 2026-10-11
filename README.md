@@ -42,6 +42,30 @@ recipe; the doctor performs no writes.
 * Optional local-AI packages install runtimes only. The feedback scorer's first
   inference separately downloads its configured model weights.
 
+## Portable project supervision
+
+[Project supervision](skills/project-supervision/SKILL.md) pairs a coding
+harness with a supervisor through a short mission, checkpoints, and handoffs.
+Either role can be the same process; a periodically invoked task can supervise
+through plain files. It keeps ranked product outcomes, first-use evidence,
+ownership, authority, and budget intact across sessions.
+
+This is repository-authored content. No recipe installs it or changes a live
+harness. Invoke it explicitly by reading the skill in any harness; its
+[templates](skills/project-supervision/references/templates.md) and
+[capability mappings](skills/project-supervision/references/adapters.md)
+need no particular vendor, scheduler, or model.
+
+Example prompt (replace the product and allowed actions):
+
+> Read `skills/project-supervision/SKILL.md`. Kick off a local project
+> for a desktop reading assistant. Reuse what I have already answered; ask only
+> what changes the first useful experience. Draft a mission in our chosen local
+> project records, then implement the first ranked outcome. Local edits and
+> bounded local checks are allowed; publishing, paid fallback, and global
+> configuration changes need my authorization. At checkpoints, compare evidence
+> to the first-use flow and verify the next executing owner.
+
 ## Starter configs
 
 * `home/.gitconfig` — log/status/branch aliases (`l`, `s`, `sb`, `b`, `la`…);
