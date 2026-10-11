@@ -7,7 +7,7 @@ Map roles to existing capabilities; these are not required APIs.
 | Observe | Records, Git status/diff, commands, build/session identity | Executor checkpoint, referenced evidence, timestamped build/session report |
 | Steer | Same run or existing task channel | One instruction in agreed durable inbox |
 | Execute/resume | Authorized commands in owned scope | Unavailable; executor consumes inbox at next invocation/safe checkpoint |
-| Verify | Representative installed flow + proportional checks | Read referenced results; missing/stale evidence remains unverified |
+| Verify | Relevant authorized user-flow check | Read referenced results; missing/stale evidence remains unverified |
 | Persist/report | Existing records/conversation | Latest checkpoint and existing delivery route; notify on decision, blocker, meaningful outcome within mission limits |
 | Next check | Slice boundary or already-provisioned invocation | Existing periodic invocation |
 

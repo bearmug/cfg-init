@@ -19,8 +19,8 @@ first-use outcome, not these mocked decisions, must validate usefulness.
 ## Budget
 
 Existing OMP payload: 6,443 bytes (~1,610 tokens), unchanged by this PR. Added global preprompt:
-**0 bytes**. Audited core: 3,344 bytes (~832 tokens); discovery frontmatter:
-141 bytes (~35 tokens), excluding harness wrappers. Estimates use characters/4,
+**0 bytes**. Reviewed core: 3,772 bytes (~939 tokens); discovery frontmatter:
+166 bytes (~42 tokens), excluding harness wrappers. Estimates use characters/4,
 not a vendor tokenizer.
 First draft: 8,261 bytes; compared draft: 4,336 bytes. Templates/adapters load only
 when needed; scenarios/design evidence are not routine context. Actual wrappers,

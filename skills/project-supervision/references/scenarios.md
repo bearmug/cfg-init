@@ -59,35 +59,49 @@ deferred by the user.
 [Design evidence and limitations](design-notes.md) explain why interviews, records,
 workers, and review machinery are optional.
 
-## Local forward-test findings — 2026-10-11
+## Quality evidence — 2026-10-11
 
-Evaluators did not see expected answers. A used the first draft; B/C and the
-comparison used the 4.3 KB core. The final deletion audit was not behaviorally
-rerun. No app checks, provider calls, external messages, or schedules ran.
+A fresh independent reviewer recommended a compact explicitly invoked checklist
+with optional capability mappings, rather than a new supervisor framework.
+Review found two material ambiguities: mandatory installed smoke could exceed
+relevance/authority, and asking for consequential judgment could reopen settled
+decisions. Both were corrected; acceptance ownership, requested activation, and
+mission termination were clarified. The reviewer found no remaining material
+instruction blocker on the final core.
 
-| Probe | Observed decision |
+Final core SHA-256:
+`3fbaf8e611b6d12ba2b98b3e040bdd5f4d4a1c351237d197dbeb94702a7d72d7`.
+
+Baseline and skill agents received the same raw tasks and isolated local fixtures,
+without evaluator criteria or each other's outputs. External effects were mocked.
+The final skill was read directly; optional refs were not needed. A first run
+created an unnecessary question-only kickoff file; the intent rule was narrowed,
+then all five cases reran against the final hash.
+
+| Final case | Observable outcome checked |
 |---|---|
-| A / command harness | Preserved literal content and display edits; routed schema repair to its existing writer, proposed bounded wire/installed checks; claimed no execution. |
-| B / periodic records | Recorded a pending diagnostic, preserved quota reserve and dirty ownership, rejected worker-granted authority; required unknown-effect reconciliation and capability verification before resume. |
-| C / delayed results | Kept unchanged selected revisions with partial coverage; rejected B:3; withheld acceptance until installed/microphone evidence, without demanding a field session. |
+| Clear CLI label change | Existing view printed the corrected label; no product questions or additional project files. |
+| Ambiguous dashboard kickoff | Three unresolved audience/value/priority questions; settled Mac/data/spend choices reused; no dashboard acceptance claim. |
+| Green component tests, broken inventory import | Actual positive/negative CLI imports corrected after repair; quoted/multiline names and samples/tests preserved. |
+| Stale-session roadmap resume | One read-only probe returned R7 instead of intended R8; dirty old owner unreleased. Inbox was not called execution; denied actions and unknown effects remained gated. |
+| Changed user priorities | Existing mission/checkpoint changed to notes-first/stop-reopen; constraints, accepted export, missing evidence and transport ownership preserved. No UI execution claimed. |
 
-Comparison: two fresh sessions independently handled five identical raw tasks:
-label typo with settled acceptance; ambiguous dashboard; report title in an
-already-instructed repo; disconnected-tools roadmap resume; green tests with a
-broken core flow. Only the treatment read SKILL.md; it needed no optional refs.
+Main reran the CLI flows and inspected records, protected inputs and exact hashes.
+Both baseline and final skill met essential case criteria: no unsafe action,
+false completion, unnecessary proposed interruption, or extra planning file.
+Both proposed three product questions only in the ambiguous case. Initial skill
+planning-file overhead was one; the final rerun reduced it to zero. Core input
+overhead is approximately 939 tokens, with zero global preprompt addition.
 
-| Measure | No-skill baseline | Compressed skill |
-|---|---|---|
-| Cases asking judgment | Ambiguous dashboard only | Ambiguous dashboard only |
-| New project planning files / false completion / changed user decisions | 0 / 0 / 0 | 0 / 0 / 0 |
-| Five task responses, words | 801 | 835 |
-| Added skill input | 0 | ~1,080 tokens |
-| Installed smoke success / user corrections | Not measured | Not measured |
+Earlier 4.3 KB mocked comparisons likewise showed no demonstrated gain and about
+4% longer responses. Current JSON response formats differ, so no output-token,
+runtime or savings comparison is claimed. The final checks confirm bounded
+correct behavior and no material regression in these cases, not statistically
+proven productivity gain or a universal supervisor.
 
-Both handled the core boundaries. Treatment made revision/coverage and unknown
-effects explicit, without demonstrated better success. Output grew about 4%.
-One simulated pair establishes no runtime/cost/reliability/product gain. No extra
-machinery was justified; usefulness needs actual first-use acceptance and
-continuation, measured alongside corrections and context cost.
-
-Full run artifacts were local and disposable; they are not runtime dependencies.
+Limits: toy CLI flows and mocked recovery do not validate the desktop product,
+real provider/audio races, actual executor-consumed continuation, or cross-harness
+runtime reliability. Existing records/adapters remain cooperative contracts.
+Usefulness still needs actual first-use acceptance and continuation, measured
+alongside user corrections and context cost. Full artifacts were local/disposable;
+they are not runtime dependencies.

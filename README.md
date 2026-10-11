@@ -51,7 +51,7 @@ through plain files. It keeps ranked product outcomes, first-use evidence,
 ownership, authority, and budget intact across sessions.
 
 This is repository-authored content. No recipe installs it or changes a live
-harness. Read the skill directly in any harness; its
+harness. Invoke it explicitly by reading the skill in any harness; its
 [templates](skills/project-supervision/references/templates.md) and
 [capability mappings](skills/project-supervision/references/adapters.md)
 need no particular vendor, scheduler, or model.
