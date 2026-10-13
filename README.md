@@ -51,7 +51,12 @@ through plain files. It keeps ranked product outcomes, first-use evidence,
 ownership, authority, and budget intact across sessions.
 
 This is repository-authored content. No recipe installs it or changes a live
-harness. Invoke it explicitly by reading the skill in any harness; its
+harness. Codex discovers the canonical skill through the repository-local
+`.agents/skills/project-supervision` link. It lists the skill's name and
+description, then can load the full instructions after explicit invocation or
+description matching ([discovery docs](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)).
+Other harnesses need their documented skill path or an explicit instruction to
+read it; no automatic discovery is implied. Its
 [templates](skills/project-supervision/references/templates.md) and
 [capability mappings](skills/project-supervision/references/adapters.md)
 need no particular vendor, scheduler, or model.
