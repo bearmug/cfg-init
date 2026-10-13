@@ -1,6 +1,6 @@
 ---
 name: project-supervision
-description: Use when asked to kick off, supervise, recover, or hand off project work; keep ranked outcomes and execution evidence intact.
+description: Use when asked to start, supervise, recover, or hand off project work; preserve ticket scope and evidence, and guide optional coding delegation.
 ---
 
 # Project supervision
@@ -21,6 +21,18 @@ boundaries through checkpoints and handoffs. Use existing records; return unansw
 kickoff questions in the reply rather than creating a planning file merely to hold them.
 Real user feedback can change the plan; record the decision. Tickets cannot replace
 intent or redefine scope for closure.
+
+**Tickets.** For ticketed work, identify one existing primary ticket and its coherent
+outcome and full acceptance scope before coding. If scope changes, update the ticket
+and keep residual obligations open; verify every acceptance item before closing it.
+Cross-ticket work needs an explicit dependency and reason.
+
+**Delegate.** Delegate only when context isolation, expertise, or execution benefit
+outweighs handoff and review cost. A capable main model owns design, contracts,
+integration, and acceptance. Use bounded, self-contained small-context workers with
+disjoint write scope; parallelize only independent work. Prefer cheaper models when
+sufficient. Require concise evidence-bearing handoffs with checks and blockers;
+escalate difficult tasks. Avoid recursive fanout and duplicate work.
 
 **Checkpoint.** Compare the top unmet outcome to actual first-use behavior.
 Separate delivered, missing implementation, missing evidence, and explicitly
