@@ -46,10 +46,13 @@ at 300k tokens. `agents/{easy,mid,high}-*.md` are the delegation tiers reference
 
 **T3.** In T3, set the OMP provider's `commandPath` to `~/.local/bin/omp-feedback` with args
 `["acp"]`. The relay feeds every prompt to the feedback loop and enforces worker rules on
-delegated children. Coordinators delegate through
-`~/.local/share/cfg-init-feedback/t3_policy.py delegate` (JSON assignment on stdin). It defaults
-to Sol 6.1, uses Luna for `"lane":"economy"`, and requires an explicit pin for anything else.
-Children return `BLOCKED` instead of asking the user. These guards are cooperative, not a sandbox.
+delegated children. Coordinators delegate two ways: app-owned T3 child tasks through
+`~/.local/share/cfg-init-feedback/t3_policy.py delegate` (JSON assignment on stdin; `"lane"` is a
+tier name, default `high-sol`; `"pinned"` takes an explicit target), or native `task` subagents,
+which run inside the coordinator thread and are mirrored as `todo` items. The OMP extension
+`extensions/t3-coordinator.ts` lets only the main coordinator session spawn natively; T3 workers
+and native subagents are workers. Children return `BLOCKED` instead of asking the user. These
+guards are cooperative, not a sandbox.
 
 **Feedback.** Every prompt is scored locally (Qwen3-1.7B on `127.0.0.1:8086`). Prompts above the
 threshold go to a tool-free OMP screening agent, so those prompts reach that model's provider.

@@ -10,24 +10,28 @@ from unittest.mock import patch
 
 import t3_policy as policy
 
+SOL = policy.TIERS[policy.DEFAULT_LANE]
+LUNA = policy.TIERS["easy-luna"]
+
 
 def catalog():
     options = [{"id": "thinking", "type": "select", "options": [{"id": "auto"}, {"id": "high"}]},
                {"id": "mode", "type": "select", "options": [{"id": "default"}]}]
     return {"parentThreadId": "parent", "providers": [{"providerInstanceId": "omp", "canRunChildTask": True,
-            "models": [{"id": m, "options": options} for m in (policy.SOL, policy.LUNA)]}]}
+            "models": [{"id": m, "options": options} for m in policy.TIERS.values()]}]}
 
 
 class RoutingTest(unittest.TestCase):
-    def test_deliberate_economy_and_pins_do_not_override_quality_silently(self):
-        self.assertEqual(policy.select({}, catalog())[0]["model"], policy.SOL)
-        self.assertEqual(policy.select({"lane": "economy", "reason": "bounded extraction"}, catalog())[0]["model"], policy.LUNA)
-        for request in ({"lane": "economy"}, {"target": {"model": policy.LUNA}},
+    def test_tier_lanes_and_pins_do_not_override_default_silently(self):
+        self.assertEqual(policy.select({}, catalog())[0]["model"], SOL)
+        self.assertEqual(policy.select({"lane": "easy-haiku", "reason": "bounded extraction"}, catalog())[0]["model"],
+                         policy.TIERS["easy-haiku"])
+        for request in ({"lane": "easy-luna"}, {"lane": "economy", "reason": "retired lane"}, {"target": {"model": LUNA}},
                         {"lane": "pinned", "reason": "user pin", "target": {
-                            "providerInstanceId": "omp", "model": policy.SOL, "options": {"thinking": "xhigh"}}}):
+                            "providerInstanceId": "omp", "model": SOL, "options": {"thinking": "xhigh"}}}):
             with self.subTest(request=request), self.assertRaises(ValueError):
                 policy.select(request, catalog())
-        target = {"providerInstanceId": "omp", "model": policy.SOL, "options": {"thinking": "high"}}
+        target = {"providerInstanceId": "omp", "model": SOL, "options": {"thinking": "high"}}
         self.assertEqual(policy.select({"lane": "pinned", "reason": "user explicitly pinned high", "target": target}, catalog())[0], target)
         missing = catalog()
         missing["providers"][0]["models"] = []
@@ -45,7 +49,7 @@ class RoutingTest(unittest.TestCase):
         def transport(tool, args):
             calls.append((tool, args))
             if tool == "delegate_task":
-                return {"taskId": "task", "childThreadId": "child", "providerInstanceId": "omp", "model": policy.LUNA}
+                return {"taskId": "task", "childThreadId": "child", "providerInstanceId": "omp", "model": LUNA}
             return {}
         with patch.object(policy, "context", return_value=(catalog(), {"threadId": "parent"}, False)), \
                 patch.object(policy, "call", side_effect=transport), patch.object(policy, "audit"):
@@ -56,9 +60,9 @@ class RoutingTest(unittest.TestCase):
     def test_unconfirmed_thinking_cancels_even_when_model_matches(self):
         def transport(tool, args):
             if tool == "delegate_task":
-                return {"taskId": "task", "childThreadId": "child", "providerInstanceId": "omp", "model": policy.SOL}
+                return {"taskId": "task", "childThreadId": "child", "providerInstanceId": "omp", "model": SOL}
             if tool == "t3_thread_configuration":
-                return {"modelSelection": {"instanceId": "omp", "model": policy.SOL, "options": [{"id": "thinking", "value": "low"}]}}
+                return {"modelSelection": {"instanceId": "omp", "model": SOL, "options": [{"id": "thinking", "value": "low"}]}}
             return {}
         with patch.object(policy, "context", return_value=(catalog(), {"threadId": "parent"}, False)), \
                 patch.object(policy, "call", side_effect=transport) as call, patch.object(policy, "audit"):

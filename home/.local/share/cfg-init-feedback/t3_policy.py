@@ -7,8 +7,15 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
-SOL = "openai-codex/gpt-6.1-sol"
-LUNA = "openai-codex/gpt-6-luna"
+# Tier lanes mirror the native omp tier agents (~/.omp/agent/agents/<tier>.md).
+TIERS = {
+    "easy-luna": "openai-codex/gpt-6-luna",
+    "easy-haiku": "anthropic/claude-haiku-5-5",
+    "mid-sonnet": "anthropic/claude-sonnet-5-5",
+    "high-sol": "openai-codex/gpt-6.1-sol",
+    "high-opus": "anthropic/claude-opus-5-5",
+}
+DEFAULT_LANE = "high-sol"
 WORKER_RULES = (
     "You are a bounded worker, not a coordinator. Do not spawn agents or threads, "
     "including native task/eval agents, T3 delegation, shell-launched agents, or feedback workers. "
@@ -51,13 +58,13 @@ def context():
 
 
 def select(request, capabilities):
-    lane = request.get("lane", "quality")
-    if lane not in ("quality", "economy", "pinned"):
-        raise ValueError("lane must be quality, economy or pinned")
+    lane = request.get("lane", DEFAULT_LANE)
+    if lane != "pinned" and lane not in TIERS:
+        raise ValueError("lane must be one of " + ", ".join([*TIERS, "pinned"]))
     reason = request.get("reason", "Safe quality default; consequential ambiguity stays on Sol")
-    if lane != "quality" and not request.get("reason", "").strip():
-        raise ValueError("economy/pinned routing requires a reason")
-    target = {"providerInstanceId": "omp", "model": LUNA if lane == "economy" else SOL,
+    if lane != DEFAULT_LANE and not request.get("reason", "").strip():
+        raise ValueError("non-default routing requires a reason")
+    target = {"providerInstanceId": "omp", "model": TIERS.get(lane),
               "options": {"thinking": "auto", "mode": "default"}}
     if lane == "pinned":
         target = request["target"]
