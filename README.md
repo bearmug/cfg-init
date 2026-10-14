@@ -20,8 +20,8 @@ Run `./install.sh list` for the live list. `*` = default.
 | Component | Installs |
 |---|---|
 | `packages`* | Brewfile (macOS) or apt + uv/bun/omp installers (Linux) |
-| `git`* | aliases + global ignore via `include.path`; identity from env or prompt; OS credential helper |
-| `zsh`* | Oh My Zsh, autosuggestions, syntax-highlighting; zsh login shell |
+| `git`* | aliases + global ignore via `include.path`; identity from env or prompt; OS credential helper (moves plaintext `store` entries into it) |
+| `zsh`* | Oh My Zsh (default theme), autosuggestions, syntax-highlighting; zsh login shell |
 | `tmux`* | `.tmux.conf` (`C-a` prefix, Alt-arrows), TPM plugins |
 | `omp`* | native Jev judge, compaction, TS LSP, tier agents, delegation policy |
 | `feedback`* | dissatisfaction skill, OMP extension, screening, local MLX scorer (macOS launchd) |

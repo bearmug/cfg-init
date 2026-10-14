@@ -13,8 +13,9 @@ for plugin in zsh-autosuggestions zsh-syntax-highlighting; do
 	[ -d "$dir" ] || git clone -q --depth 1 "https://github.com/zsh-users/$plugin.git" "$dir"
 done
 [ -f "$HOME/.zshrc" ] || cp "$OMZ/templates/zshrc.zsh-template" "$HOME/.zshrc"
+# Theme stays Oh My Zsh's default (robbyrussell): no special fonts, works in any terminal.
 # syntax-highlighting must be the last plugin.
-cfg zshrc "$HOME/.zshrc" pygmalion zsh-autosuggestions zsh-syntax-highlighting
+cfg zshrc "$HOME/.zshrc" zsh-autosuggestions zsh-syntax-highlighting
 
 zsh_path="$(command -v zsh)"
 if [ "$(basename "${SHELL:-}")" != zsh ]; then

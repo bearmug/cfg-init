@@ -25,12 +25,27 @@ for field in name email; do
 		warn "user.$field unset: rerun with $var=..."
 	fi
 done
-# OS credential store only; never plaintext `store`.
-if ! git config --global --get credential.helper >/dev/null; then
-	if is_mac; then
-		git config --global credential.helper osxkeychain
-	elif have git-credential-manager; then
-		git config --global credential.helper manager
+
+# Credentials: an OS-backed helper, never plaintext `store`. Existing `store`
+# entries are imported, verified, and only then deleted.
+helper="${CFG_GIT_CREDENTIAL_HELPER:-}"
+if [ -z "$helper" ]; then
+	if is_mac; then helper=osxkeychain
+	elif have git-credential-manager; then helper=manager
 	fi
 fi
+current="$(git config --global --get-all credential.helper || true)"
+case "$current" in
+	"") [ -z "$helper" ] || git config --global credential.helper "$helper" ;;
+	store*)
+		if [ -z "$helper" ]; then
+			warn "plaintext credential store kept: no OS helper found; install Git Credential Manager or set CFG_GIT_CREDENTIAL_HELPER, then rerun"
+		else
+			cfg git-credentials "$helper"
+			git config --global --replace-all credential.helper "$helper"
+			rm -f "$HOME/.git-credentials" "$HOME/.config/git/credentials"
+			log "credentials moved from plaintext store to $helper"
+		fi
+		;;
+esac
 log "git: $(git config --global user.name || echo '?') <$(git config --global user.email || echo '?')>"

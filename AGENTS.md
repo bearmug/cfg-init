@@ -7,6 +7,9 @@
 2. Install non-interactively: `./install.sh --yes [component..]`. With no components it installs
    the defaults. `./install.sh list` shows what is available.
    - `git` needs `GIT_USER_NAME` and `GIT_USER_EMAIL` when no identity is configured yet.
+   - `git` moves plaintext `credential.helper store` entries into the OS helper (macOS keychain,
+     or Git Credential Manager on Linux). It verifies every entry before deleting
+     `~/.git-credentials`. `CFG_GIT_CREDENTIAL_HELPER` overrides the helper.
    - `notify` writes credentials only from `TG_BOT_TOKEN` and `TG_CHAT_ID`. Never invent them.
    - `FEEDBACK_SKIP_MODEL=1` skips the local scorer service, for example when the backend is
      remote or the machine runs Linux.

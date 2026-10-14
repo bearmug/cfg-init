@@ -26,7 +26,7 @@ done
 
 if have git; then
 	git config --global --get-all include.path | grep -q cfg-init.gitconfig && ok "git: aliases included" || w "git: aliases not included"
-	[ "$(git config --global credential.helper)" = store ] && bad "git: plaintext credential store enabled" || ok "git: no plaintext credentials"
+	case "$(git config --global --get-all credential.helper)" in store*) bad "git: plaintext credential store enabled (fix: ./install.sh --yes git)" ;; *) ok "git: no plaintext credentials" ;; esac
 	git config --global user.email >/dev/null && ok "git: identity set" || w "git: user.email unset"
 	drift git .config/git/cfg-init.gitconfig .config/git/ignore
 fi

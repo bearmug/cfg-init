@@ -65,11 +65,10 @@ def defaults(dst: str, *pairs: str) -> None:
     write(path, (json.dumps(config, indent=2) + "\n").encode(), 0o600)
 
 
-def zshrc(dst: str, theme: str, *plugins: str) -> None:
-    """Ensure plugins are listed; replace only the stock robbyrussell theme."""
+def zshrc(dst: str, *plugins: str) -> None:
+    """Ensure plugins are listed in .zshrc; the theme is left alone."""
     path = Path(dst)
     text = path.read_text() if path.exists() else ""
-    text = re.sub(r'(?m)^ZSH_THEME="robbyrussell".*$', f'ZSH_THEME="{theme}"', text)
     match = re.search(r"(?m)^plugins=\(([^)]*)\)", text)
     if match:
         have = match.group(1).split()
@@ -146,9 +145,38 @@ def launchd(label: str, log: str, *argv: str) -> None:
     print(f"  running: {domain}/{label}")
 
 
+def git_credentials(helper: str) -> None:
+    """Copy every `git credential-store` entry into helper and verify each read-back.
+
+    Exits nonzero, changing nothing else, if any entry fails to round-trip.
+    """
+    from urllib.parse import unquote, urlsplit
+    git = ["git", "-c", "credential.helper=", "-c", f"credential.helper={helper}", "credential"]
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_ASKPASS": "", "SSH_ASKPASS": ""}
+    files = [Path.home() / ".git-credentials", Path.home() / ".config/git/credentials"]
+    count = 0
+    for line in (l.strip() for f in files if f.exists() for l in f.read_text().splitlines()):
+        url = urlsplit(line)
+        if not url.scheme or url.password is None or not url.hostname:
+            continue
+        host = url.hostname + (f":{url.port}" if url.port else "")
+        query = f"protocol={url.scheme}\nhost={host}\nusername={unquote(url.username or '')}\n"
+        if url.path.strip("/"):
+            query += f"path={unquote(url.path.lstrip('/'))}\n"
+        password = unquote(url.password)
+        subprocess.run([*git, "approve"], input=query + f"password={password}\n\n", text=True, env=env, check=True)
+        filled = subprocess.run([*git, "fill"], input=query + "\n", text=True, env=env, capture_output=True)
+        if f"password={password}\n" not in filled.stdout:
+            sys.exit(f"  x {helper} did not return the stored credential for {url.scheme}://{host}; plaintext store kept")
+        count += 1
+    print(f"  imported: {count} credential(s) into {helper}")
+
+
+
 if __name__ == "__main__":
     commands = {"put": put, "section": section, "defaults": defaults, "zshrc": zshrc,
-                "omp-settings": omp_settings, "lsp-server": lsp_server, "launchd": launchd}
+                "omp-settings": omp_settings, "lsp-server": lsp_server, "launchd": launchd,
+                "git-credentials": git_credentials}
     if len(sys.argv) < 2 or sys.argv[1] not in commands:
         sys.exit("usage: cfg.py " + "|".join(commands) + " ARGS")
     commands[sys.argv[1]](*sys.argv[2:])
