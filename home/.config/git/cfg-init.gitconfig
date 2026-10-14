@@ -1,0 +1,20 @@
+# Included from ~/.gitconfig by components/git.sh; identity stays in ~/.gitconfig.
+[alias]
+	l = log --pretty=format:"%C(yellow)%h\\ %ad%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --date=short
+	a = add *
+	ap = add -p
+	c = commit --verbose
+	ca = commit -a --verbose
+	cm = commit -m
+	cam = commit -a -m
+	m = commit --amend --verbose
+	d = diff
+	ds = diff --stat
+	dc = diff --cached
+	s = status -s
+	sb = status -sb
+	co = checkout
+	cob = checkout -b
+	# branches by last commit
+	b = for-each-ref --sort=-committerdate --format='%(committerdate:short)%09%(objectname:short)%09%(refname:short)' refs/heads
+	la = "!git config --get-regexp '^alias\\.' | cut -c 7-"

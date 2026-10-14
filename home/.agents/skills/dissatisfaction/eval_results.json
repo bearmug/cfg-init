@@ -1,0 +1,71 @@
+{
+  "threshold": 0.8,
+  "development_set": {
+    "synthetic_cases": 20,
+    "private_retained_history_cases": 20,
+    "limitation": "Manual single-rater labels; retained history is positive-selected because terminal prompts are erased. Few-shot examples were developed on this set, so it is not a held-out production accuracy estimate."
+  },
+  "measurements": {
+    "original": {
+      "n": 40,
+      "tp": 9,
+      "fp": 20,
+      "fn": 3,
+      "precision": 0.3103448275862069,
+      "recall": 0.75,
+      "mean_ms": 438.5434384500002
+    },
+    "single_turn_json": {
+      "n": 40,
+      "tp": 7,
+      "fp": 1,
+      "fn": 5,
+      "precision": 0.875,
+      "recall": 0.5833333333333334,
+      "mean_ms": 414.7843542500001
+    },
+    "contrastive_few_shot": {
+      "n": 40,
+      "tp": 9,
+      "fp": 1,
+      "fn": 3,
+      "precision": 0.9,
+      "recall": 0.75,
+      "mean_ms": 428.6732885499994
+    },
+    "implemented_metadata_isolation": {
+      "n": 40,
+      "tp": 11,
+      "fp": 1,
+      "fn": 1,
+      "precision": 0.9166666666666666,
+      "recall": 0.9166666666666666,
+      "mean_ms": 365.0731635249962
+    },
+    "synthetic_holdout": {
+      "n": 10,
+      "tp": 4,
+      "fp": 1,
+      "fn": 0,
+      "precision": 0.8,
+      "recall": 1.0,
+      "mean_ms": 217.02391250000233
+    }
+  },
+  "threshold_trial": {
+    "contrastive_few_shot_at_0.5": {
+      "n": 40,
+      "tp": 10,
+      "fp": 1,
+      "fn": 2,
+      "precision": 0.9090909090909091,
+      "recall": 0.8333333333333334,
+      "mean_ms": 428.6732885499994
+    }
+  },
+  "known_interview_answer": {
+    "before": 0.9996646498695336,
+    "after": 0.00012339457598623172
+  },
+  "privacy": "Local MLX only. Jev was not trialed: real-history export would change privacy posture. No remote judge or config change enabled."
+}

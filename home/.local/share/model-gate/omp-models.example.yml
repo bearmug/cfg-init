@@ -1,0 +1,17 @@
+# Example OMP models.yml provider for the gate. Merge into ~/.omp/agent/models.yml
+# after replacing the model id; pair it with a cloud retry.fallbackChains entry
+# so a 503 from the gate falls through immediately.
+providers:
+  local-gate:
+    baseUrl: http://127.0.0.1:8090/v1
+    auth: none
+    api: openai-completions
+    models:
+      - id: local-gate-model
+        name: Local model through gate
+        contextWindow: 65536
+        maxTokens: 8192
+        reasoning: true
+        input: [text]
+        supportsTools: true
+        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }
