@@ -1,16 +1,15 @@
 // Local model gate: low-power and saturation guard for any OpenAI-compatible
 // upstream server. Listens on 127.0.0.1:8090 and forwards to 127.0.0.1:8080
 // by default; override MODEL_GATE_UPSTREAM, MODEL_GATE_PORT, and
-// MODEL_GATE_LIMIT for another backend/model. The Bonsai 2 values are merely
-// the tested example/default, not part of the gate policy.
+// MODEL_GATE_LIMIT for another backend.
 // Saturated or LPM -> immediate HTTP 503, no queue. The 503 shape matches
 // harness transient classifiers so the caller can spill over to its fallback.
 // A dead /slots probe fails open; a dead upstream returns 503.
 // Observability: GET /health and GET /gate-status.
 // NOTE: idleTimeout 255 = Bun max; long non-streaming calls remain supported.
-const UPSTREAM = Bun.env.MODEL_GATE_UPSTREAM ?? Bun.env.BONSAI_UPSTREAM ?? "http://127.0.0.1:8080";
-const PORT = Number(Bun.env.MODEL_GATE_PORT ?? Bun.env.BONSAI_GATE_PORT ?? 8090);
-const LIMIT = Number(Bun.env.MODEL_GATE_LIMIT ?? Bun.env.BONSAI_GATE_BUSY_LIMIT ?? 2);
+const UPSTREAM = Bun.env.MODEL_GATE_UPSTREAM ?? "http://127.0.0.1:8080";
+const PORT = Number(Bun.env.MODEL_GATE_PORT ?? 8090);
+const LIMIT = Number(Bun.env.MODEL_GATE_LIMIT ?? 2);
 const SLOT_TIMEOUT_MS = 2500;
 
 const startedAt = Date.now();

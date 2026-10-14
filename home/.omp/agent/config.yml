@@ -1,13 +1,28 @@
-# OMP agent tuning: compaction, native judge, task LSP, and recap.
-# cfg-tools-omp.sh applies every key below; record values (modelRoles,
-# fallbackChains, modelThresholds) merge into existing user entries.
+# Applied key-by-key by components/omp.sh; record values merge into existing entries.
 setupVersion: 2
-advisor:
-  maxNotesPerUpdate: 1
+# Native TypeSafe Jev as primary judge unlocks the judge-gated features
+# (find, judged TTSR rules, auto thinking, smart stops, smart charts).
+# Fallbacks stay on Jev: preview, then the same model via OpenRouter, then OpenCode Zen.
+# Tier roles back agents/*.md (APPEND_SYSTEM.md "Model tiers").
+modelRoles:
+  judge: typesafe/jev-latest
+  easy-luna: openai-codex/gpt-6-luna
+  easy-haiku: anthropic/claude-haiku-5-5
+  mid-sonnet: anthropic/claude-sonnet-5-5
+  high-sol: openai-codex/gpt-6.1-sol
+  high-opus: anthropic/claude-opus-5-5
+retry:
+  fallbackChains:
+    judge:
+      - typesafe/jev-preview
+      - openrouter/~typesafe/jev-latest
+      - opencode-zen-jev/jev-1.13
+defaultThinkingLevel: auto
+tui:
+  autoGraph: smart
 compaction:
   thresholdPercent: 80
-  # 1M-window Claude families: compact at 80% of a 375k base (300k), not 800k.
-  # Bases at or below a model's standard window never opt into extended windows.
+  # 1M-window Claude families compact at 300k (80% of 375k): cache reads dominate long-session cost.
   modelThresholds:
     anthropic/claude-opus-5*: 375000
     anthropic/claude-sonnet-5*: 375000
@@ -16,20 +31,15 @@ compaction:
   idleEnabled: true
   idleTimeoutSeconds: 600
   v2RetainedMessageBudget: 32000
+snapcompact:
+  toolResults: false
 display:
   showTokenUsage: true
   cacheMissMarker: true
-snapcompact:
-  # Upstream default; explicit to turn off earlier cfg-init installs.
-  toolResults: false
 task:
   enableLsp: true
   maxRecursionDepth: 1
+advisor:
+  maxNotesPerUpdate: 1
 recap:
   idleSeconds: 600
-modelRoles:
-  judge: typesafe/jev-latest
-retry:
-  fallbackChains:
-    judge:
-      - opencode-zen-jev/jev-1.13

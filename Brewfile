@@ -1,5 +1,5 @@
-# Core CLI tools for the macOS workstation recipe.
-# No credentials, user paths, GUI apps, or model downloads.
+# macOS baseline for components/packages.sh. Keep in sync with its apt list.
+tap "can1357/tap"
 brew "git"
 brew "gh"
 brew "jq"
@@ -11,3 +11,4 @@ brew "tmux"
 brew "direnv"
 brew "uv"
 brew "bun"
+brew "can1357/tap/omp"

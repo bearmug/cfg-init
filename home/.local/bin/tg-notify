@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# tg-notify — ping the user on Telegram via @harness_notifications_bot.
+# Usage: tg-notify "done: <one-line summary>"
+#        echo "longer text" | tg-notify
+#        TG_SESSION=wow-omp-work tg-notify "done: ..."
+#        TG_NOTIFY_NO_PREFIX=1 tg-notify "no session tag"
+# Works from any harness (omp, codex, plain shell). Fire-and-forget.
+#
+# Session routing: messages are prefixed "[<session>]" so you can reply from
+# Telegram as "<session>: <message>" and tg-listen(1) will deliver it to that
+# cmux workspace. Name resolution order: $TG_SESSION, then the current cmux
+# workspace title (custom title, else last token — sanitized).
+# TG_NOTIFY_NO_PREFIX=1 skips the prefix; TG_NOTIFY_DRY_RUN=1 prints instead
+# of sending (for tests).
+set -u
+ENV_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/tg-notify/env"
+if [ -f "$ENV_FILE" ]; then
+  set -a
+  # shellcheck disable=SC1090
+  . "$ENV_FILE"
+  set +a
+fi
+TOKEN="${TG_BOT_TOKEN:-}"
+CHAT="${TG_CHAT_ID:-}"
+MSG="$*"
+if [ -z "$MSG" ] && [ ! -t 0 ]; then
+  MSG="$(cat)"
+fi
+if [ -z "$MSG" ]; then
+  echo 'usage: tg-notify "message text"' >&2
+  exit 2
+fi
+if [ -z "$TOKEN" ]; then
+  echo "tg-notify: TG_BOT_TOKEN unset (check $ENV_FILE)" >&2
+  exit 1
+fi
+if [ -z "$CHAT" ]; then
+  echo "tg-notify: TG_CHAT_ID unset (check $ENV_FILE)" >&2
+  exit 1
+fi
+
+# --- session-name resolution (routing contract) ---
+# Sanitizes to lowercase [a-z0-9][a-z0-9._-]*, max 64 chars. Rejects names
+# that would be ambiguous in the "<session>: <msg>" reply syntax.
+tg_session_name() {
+  local raw="$1"
+  # cmux titles like "π ⠋ wow-omp-work" reduce to "wow-omp-work" via the
+  # leading trim; multiword titles become dashed ("ONYX Nova Air" →
+  # "onyx-nova-air") — still deterministic and routable. tr-based (BSD-safe).
+  raw="$(printf '%s' "$raw" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9._-' '-' | sed 's/^-*//; s/-*$//')"
+  raw="${raw:0:64}"
+  case "$raw" in
+    "" | *:* | "." | "..") return 1 ;;
+  esac
+  printf '%s' "$raw"
+}
+
+TG_SESSION_NAME=""
+if [ -z "${TG_NOTIFY_NO_PREFIX:-}" ]; then
+  if [ -n "${TG_SESSION:-}" ]; then
+    TG_SESSION_NAME="$(tg_session_name "$TG_SESSION" || true)"
+  elif command -v cmux >/dev/null 2>&1; then
+    # best-effort: current workspace title
+    _ws_title="$(cmux workspace list --json 2>/dev/null | python3 -c "
+import json,sys
+try:
+  d=json.load(sys.stdin)
+except Exception:
+  raise SystemExit(1)
+for w in d.get('workspaces',[]):
+  if w.get('selected'):
+    print(w.get('custom_title') or w.get('title') or '')
+    break
+" 2>/dev/null || true)"
+    if [ -n "${_ws_title:-}" ]; then
+      TG_SESSION_NAME="$(tg_session_name "$_ws_title" || true)"
+    fi
+    unset _ws_title
+  fi
+fi
+
+if [ -n "$TG_SESSION_NAME" ]; then
+  MSG="[$TG_SESSION_NAME] $MSG"
+fi
+unset TG_SESSION_NAME
+
+# TG_NOTIFY_DRY_RUN=1: print instead of sending (tests / verification)
+if [ -n "${TG_NOTIFY_DRY_RUN:-}" ]; then
+  printf '%s\n' "$MSG"
+  exit 0
+fi
+# URL goes through stdin config so the token never appears in `ps`.
+CODE="$(printf 'url = "https://api.telegram.org/bot%s/sendMessage"\n' "$TOKEN" \
+  | curl -s --max-time 20 -o /dev/null -w '%{http_code}' -K - \
+  --data-urlencode "chat_id=$CHAT" \
+  --data-urlencode "text=$MSG" \
+  --data-urlencode "disable_web_page_preview=true")"
+if [ "$CODE" != "200" ]; then
+  echo "tg-notify: send failed (http $CODE)" >&2
+  exit 1
+fi
