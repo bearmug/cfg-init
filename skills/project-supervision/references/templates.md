@@ -15,6 +15,27 @@ Convincing short user flow + existing evidence?
 Authority, budget/reserve/fallback/retry limits, escalation/check cadence?
 ```
 
+## Initiative
+
+Fill before filing; if a line cannot be answered, file a smaller ticket or none.
+
+```text
+Existing owner searched (open + recently closed); why not reuse/reopen:
+Observable outcome (title) + first user flow it improves:
+Smallest slice shipped next; later slices deferred, not pre-filed:
+Non-goals / candidate technologies (not the outcome):
+Acceptance (<= ~8), each with evidence level + who/what produces it:
+User-only evidence/authority owner + when; fallback if unavailable:
+Study? decision informed / minimal experiment / threshold / stop date:
+Kill or stop criteria; what stays shipped meanwhile:
+```
+
+Anti-patterns: day-one spec of every feature; omnibus checklists; "better/robust"
+without a threshold; solution- or status-named titles; duplicate lanes for one
+outcome; open-ended matrix/replacement programs; acceptance gated on user action
+nobody owns; bodies that grow into run logs; scope added without revising
+acceptance; deferred or deleted work closed as completed.
+
 ## Mission
 
 ```text

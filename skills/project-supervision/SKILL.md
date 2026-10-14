@@ -22,6 +22,19 @@ kickoff questions in the reply rather than creating a planning file merely to ho
 Real user feedback can change the plan; record the decision. Tickets cannot replace
 intent or redefine scope for closure.
 
+**Initiate.** Before filing new work, search open and recently closed tickets; extend
+or reopen one owner instead of adding a parallel lane. File the smallest outcome the
+user can observe next, titled by that outcome, not by a replacement technology or
+status. Not a full product spec on day one: file the first slice, then the next
+after real use ranks it, since features filed ahead of use tend to be built
+and then deleted. Keep acceptance under ~8 criteria, each with one evidence level
+(source, CI, installed, semantic, native/physical). Name who supplies user-only
+evidence (recording, permission, authorization) and when. A study or replacement
+needs the decision it informs, a minimal experiment, a threshold and a stop date, or it
+is not filed. State non-goals and kill criteria. An umbrella only links children.
+The ticket body holds outcome and acceptance; receipts and logs go in comments
+or artifacts, and titles never change to carry status.
+
 **Tickets.** For ticketed work, identify one existing primary ticket and its coherent
 outcome and full acceptance scope before coding. If scope changes, update the ticket
 and keep residual obligations open; verify every acceptance item before closing it.
