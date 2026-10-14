@@ -3,45 +3,56 @@
 # Tune OMP without replacing unrelated user configuration.
 set -e
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+AGENT_DIR="$(omp config path)"
 
 # Install the local context-compression tool and TypeScript LSP prerequisites.
 uv tool install --python 3.13 "headroom-ai[all]"
 bun install -g typescript typescript-language-server@6.0.1
 LSP_BIN="$(command -v typescript-language-server)"
+HEADROOM_BIN="$(uv tool dir --bin)/headroom"
 
-omp config set compaction.thresholdTokens -- -1
-omp config set compaction.thresholdPercent 80
-omp config set compaction.keepRecentTokens 20000
-omp config set compaction.idleEnabled true
-omp config set compaction.idleThresholdTokens 200000
-omp config set compaction.idleTimeoutSeconds 180
-omp config set compaction.v2RetainedMessageBudget 32000
-omp config set compaction.experimentalContextManagement false
-omp config set display.showTokenUsage true
-omp config set display.cacheMissMarker true
-omp config set snapcompact.shape auto
-omp config set snapcompact.systemPrompt none
-omp config set snapcompact.toolResults true
-omp config set task.enableLsp true
-omp config set task.maxRecursionDepth 1
-omp config set recap.idleSeconds 600
-omp config set advisor.maxNotesPerUpdate 1
-
-mkdir -p "$HOME/.omp/agent"
-python3 - "$HOME/.omp/agent" "$SCRIPT_DIR/home/.omp/agent" "$LSP_BIN" <<'EOF'
+mkdir -p "$AGENT_DIR"
+# Apply home/.omp/agent/config.yml, the single source of these settings.
+python3 - "$AGENT_DIR" "$SCRIPT_DIR/home/.omp/agent" "$LSP_BIN" "$HEADROOM_BIN" <<'EOF'
 import json, re, subprocess, sys
 from pathlib import Path
 
 target_dir, template_dir = map(Path, sys.argv[1:3])
 lsp_command = sys.argv[3]
 
-for key, judge in (("modelRoles", "typesafe/jev-latest"),
-                   ("retry.fallbackChains", ["opencode-zen-jev/jev-1.13"])):
-    record = json.loads(subprocess.check_output(
-        ["omp", "config", "get", key, "--json"], text=True
-    ))["value"]
-    record["judge"] = judge
-    subprocess.run(["omp", "config", "set", key, json.dumps(record)], check=True)
+def omp_config(*args):
+    return subprocess.run(["omp", "config", *args], check=True, text=True, stdout=subprocess.PIPE).stdout
+
+def read_yaml(path):
+    if not path.exists():
+        return {}
+    parse = "console.log(JSON.stringify(Bun.YAML.parse(await Bun.stdin.text()) ?? {}))"
+    return json.loads(subprocess.run(["bun", "-e", parse], input=path.read_text(), check=True,
+                                     text=True, stdout=subprocess.PIPE).stdout)
+
+catalog = json.loads(omp_config("list", "--json"))
+# Records merge with the global file only: `omp config get` also returns project/overlay layers.
+# OMP keeps updating an existing config.yaml when no config.yml exists.
+global_file = target_dir / "config.yml"
+stored = read_yaml(global_file if global_file.exists() else target_dir / "config.yaml")
+
+def apply_settings(prefix, values):
+    for name, value in values.items():
+        key = prefix + name
+        kind = catalog.get(key, {}).get("type")
+        if kind == "record":
+            # Merge per entry so unrelated user roles, chains and thresholds survive.
+            record = stored
+            for part in key.split("."):
+                record = record.get(part) if isinstance(record, dict) else None
+            value = {**(record or {}), **value}
+        elif kind is None and isinstance(value, dict):
+            apply_settings(key + ".", value)
+            continue
+        text = value if isinstance(value, str) else json.dumps(value)
+        omp_config("set", key, "--", text)
+
+apply_settings("", read_yaml(template_dir / "config.yml"))
 
 path = target_dir / "APPEND_SYSTEM.md"
 section = (template_dir / path.name).read_text()
@@ -60,6 +71,8 @@ path = target_dir / "mcp.json"
 config = json.loads(path.read_text()) if path.exists() else {}
 template = json.loads((template_dir / path.name).read_text())
 config.setdefault("mcpServers", {}).update(template["mcpServers"])
+# GUI/ACP launches may lack uv's tool bin on PATH; use the installed binary.
+config["mcpServers"]["headroom"]["command"] = sys.argv[4]
 path.write_text(json.dumps(config, indent=2) + "\n")
 
 path = target_dir / "lsp.json"
