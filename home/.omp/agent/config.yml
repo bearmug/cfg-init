@@ -1,23 +1,27 @@
 # OMP agent tuning: compaction, native judge, task LSP, and recap.
+# cfg-tools-omp.sh applies every key below; record values (modelRoles,
+# fallbackChains, modelThresholds) merge into existing user entries.
 setupVersion: 2
 advisor:
   maxNotesPerUpdate: 1
 compaction:
-  thresholdTokens: -1
   thresholdPercent: 80
-  experimentalContextManagement: false
-  keepRecentTokens: 20000
+  # 1M-window Claude families: compact at 80% of a 375k base (300k), not 800k.
+  # Bases at or below a model's standard window never opt into extended windows.
+  modelThresholds:
+    anthropic/claude-opus-5*: 375000
+    anthropic/claude-sonnet-5*: 375000
+    anthropic/claude-fable-5*: 375000
+    anthropic/claude-mythos-5*: 375000
   idleEnabled: true
-  idleThresholdTokens: 200000
-  idleTimeoutSeconds: 180
+  idleTimeoutSeconds: 600
   v2RetainedMessageBudget: 32000
 display:
   showTokenUsage: true
   cacheMissMarker: true
 snapcompact:
-  shape: auto
-  systemPrompt: none
-  toolResults: true
+  # Upstream default; explicit to turn off earlier cfg-init installs.
+  toolResults: false
 task:
   enableLsp: true
   maxRecursionDepth: 1

@@ -93,11 +93,22 @@ Example prompt (replace the product and allowed actions):
 
 ## OMP agent defaults
 
-* Applied with `cfg-tools-omp.sh`: per-key OMP settings plus one Python merge
-  pass preserve unrelated user config.
-* configures compaction at 80%, retaining the 200k-token / 180-second idle
-  behavior, token usage and cache-miss markers, and snapcompact's auto shape,
-  no system prompt, and tool results
+* Applied with `cfg-tools-omp.sh`: every key in `home/.omp/agent/config.yml`
+  is set through `omp config` in the directory `omp config path` reports;
+  record keys (`modelRoles`, `retry.fallbackChains`,
+  `compaction.modelThresholds`) merge per entry with the global file only, so
+  unrelated user config survives and project overrides never leak into it.
+* compacts at 80% of the window. 1M-window Claude families
+  (`claude-{opus,sonnet,fable,mythos}-5*`) use a 375k base, so they compact
+  at 300k instead of 800k: prompt-cache reads dominate long-session cost and
+  grow with every turn. These bases never opt a model into an extended window.
+* idle compaction above 200k tokens waits 600 seconds (was 180), so ordinary
+  review pauses keep full context while prompt caches remain warm.
+* keeps snapcompact tool-result imaging off (it was on): each imaged large
+  result saved ~1.1k tokens per request locally while making exact text —
+  keys, line numbers, paths — harder to read. Snapcompact remains a
+  compaction method.
+* shows token usage and cache-miss markers.
 * selects the native `typesafe/jev-latest` judge with the paid
   `opencode-zen-jev/jev-1.13` retry fallback; model authentication/provider
   credentials must already be configured. Provisioning does not download
@@ -113,10 +124,12 @@ Example prompt (replace the product and allowed actions):
   section; preserves unrelated preprompt instructions and does not duplicate
   the section on re-runs.
 * requires `omp`, Bun, and `uv`; the script installs `headroom-ai[all]` with
-  Python 3.13 using uv. Add Bun's global binary directory to `PATH` before
-  running the script.
-* Native OMP experimental context management remains disabled. Global OMP
-  notes remain disabled.
+  Python 3.13 using uv and points the headroom MCP entry at uv's installed
+  binary, so GUI/ACP launches do not depend on `PATH`. Add Bun's global binary
+  directory to `PATH` before running the script.
+* Native OMP experimental context management and global OMP notes stay at
+  their disabled upstream defaults. Other upstream defaults are not pinned,
+  except `snapcompact.toolResults: false`, which turns off earlier installs.
 
 ### T3 coordinator-owned OMP workers
 
