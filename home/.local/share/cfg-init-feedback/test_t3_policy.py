@@ -133,5 +133,51 @@ class RelayBoundaryTest(unittest.TestCase):
             process.stderr.close()
 
 
+def subagent_update(status, tool=None, started=None, tool_count=0):
+    progress = {"id": "Judge", "agent": "easy-haiku", "status": status, "description": "blind A/B judge",
+                "currentTool": tool, "currentToolStartMs": started, "toolCount": tool_count, "durationMs": 0}
+    return {"jsonrpc": "2.0", "method": "session/update", "params": {"sessionId": "s", "update": {
+        "sessionUpdate": "tool_call_update", "toolCallId": "call", "rawOutput": {"details": {"progress": [progress]}}}}}
+
+
+class SubagentBoardTest(unittest.TestCase):
+    def setUp(self):
+        import omp_acp
+        self.now = 1_790_000_000.0
+        self.board = omp_acp.SubagentBoard(clock=lambda: self.now)
+        todo = {"content": "Unblind, report", "priority": "medium", "status": "pending"}
+        self.board.observe({"jsonrpc": "2.0", "method": "session/update", "params": {
+            "sessionId": "s", "update": {"sessionUpdate": "plan", "entries": [todo]}}})
+
+    def entries(self, plan):
+        return plan["params"]["update"]["entries"]
+
+    def test_subagent_rows_follow_todos_and_flag_silence(self):
+        plan = self.board.observe(subagent_update("running", "bash", self.now * 1000, 3))
+        todo, row = self.entries(plan)
+        self.assertEqual(todo["content"], "Unblind, report")
+        self.assertEqual(row["status"], "in_progress")
+        self.assertEqual(row["content"], "⑂ Judge (easy-haiku): blind A/B judge — bash <1m · 3 tools · <1m")
+        self.now += 30
+        self.assertEqual(self.board.tick(), [], "sub-minute drift must not re-send the plan")
+        self.now += 150
+        row = self.entries(self.board.tick()[0])[1]
+        # durationMs stays 0 in the update; elapsed must still advance with wall time.
+        self.assertTrue(row["content"].endswith("bash 3m · ⚠ quiet 3m · 3 tools · 3m"), row["content"])
+        stale = self.entries(self.board.observe(subagent_update("pending")))[1]
+        self.assertEqual(stale["status"], "in_progress", "late spawn snapshot must not demote a running row")
+
+    def test_new_prompt_drops_finished_subagents_only(self):
+        self.board.observe(subagent_update("completed", tool_count=5))
+        self.assertEqual(self.entries(self.board.plan("s", force=True))[1]["status"], "completed")
+        self.board.settle("s")
+        self.assertEqual(len(self.entries(self.board.plan("s", force=True))), 1)
+        self.board.observe(subagent_update("running"))
+        self.board.settle("s")
+        self.assertEqual(len(self.entries(self.board.plan("s", force=True))), 2)
+        self.assertIsNone(self.board.observe({"method": "session/update", "params": {"sessionId": "s", "update": {
+            "sessionUpdate": "tool_call_update", "toolCallId": "other", "rawOutput": {"content": []}}}}))
+
+
 if __name__ == "__main__":
     unittest.main()
