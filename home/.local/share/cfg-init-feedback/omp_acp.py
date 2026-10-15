@@ -7,8 +7,105 @@ import queue
 import subprocess
 import sys
 import threading
+import time
 import uuid
 import t3_policy
+
+QUIET_SECONDS = 120
+TICK_SECONDS = 20
+
+
+def span(seconds):
+    """Minute-granular duration so periodic refreshes change the plan at most once a minute."""
+    minutes = int(max(0, seconds)) // 60
+    if minutes < 1:
+        return "<1m"
+    return f"{minutes}m" if minutes < 60 else f"{minutes // 60}h{minutes % 60:02d}m"
+
+
+class SubagentBoard:
+    """Append live OMP subagent rows, read from `task` tool progress, to the ACP plan T3 renders."""
+
+    def __init__(self, clock=time.time):
+        self.clock = clock
+        self.todos = {}   # sessionId -> entries from OMP's todo plan
+        self.agents = {}  # sessionId -> {(toolCallId, agentId): (progress, receivedAt)}
+        self.shown = {}   # sessionId -> entries last sent to T3
+
+    def observe(self, message):
+        """Plan notification to send for this OMP message, or None. Plans always return a merged plan."""
+        if message.get("method") != "session/update":
+            return None
+        params = message.get("params") or {}
+        sid, update = params.get("sessionId"), params.get("update") or {}
+        kind = update.get("sessionUpdate")
+        if kind == "plan":
+            self.todos[sid] = [entry for entry in update.get("entries") or [] if isinstance(entry, dict)]
+            return self.plan(sid, force=True)
+        if kind not in ("tool_call", "tool_call_update"):
+            return None
+        output = update.get("rawOutput")
+        details = output.get("details") if isinstance(output, dict) else None
+        progress = details.get("progress") if isinstance(details, dict) else None
+        if not isinstance(progress, list):
+            return None
+        board = self.agents.setdefault(sid, {})
+        now = self.clock()
+        for item in progress:
+            if isinstance(item, dict) and isinstance(item.get("id"), str):
+                key = (update.get("toolCallId"), item["id"])
+                previous, _, first = board.get(key, (None, now, now))
+                # OMP interleaves a stale spawn-time "pending" snapshot after "running".
+                if previous and previous.get("status") == "running" and item.get("status") == "pending":
+                    item = {**item, "status": "running"}
+                board[key] = (item, now, first)
+        return self.plan(sid)
+
+    def settle(self, sid):
+        """New user prompt: forget finished subagents; running ones stay listed."""
+        board = self.agents.get(sid, {})
+        for key in [key for key, (item, _, _) in board.items() if item.get("status") not in ("pending", "running")]:
+            del board[key]
+
+    def tick(self):
+        """Refreshed plans for sessions with live subagents (elapsed time, quiet warnings)."""
+        live = [sid for sid, board in self.agents.items()
+                if any(item.get("status") in ("pending", "running") for item, _, _ in board.values())]
+        return [plan for plan in (self.plan(sid) for sid in live) if plan]
+
+    def row(self, item, received, first):
+        now = self.clock()
+        status = item.get("status")
+        live = status in ("pending", "running")
+        facts = []
+        if live:
+            tool, started = item.get("currentTool"), item.get("currentToolStartMs")
+            if tool:
+                busy = now - started / 1000 if isinstance(started, (int, float)) and started > 1e12 else None
+                facts.append(tool if busy is None else f"{tool} {span(busy)}")
+            elif item.get("lastIntent"):
+                facts.append(item["lastIntent"])
+            if now - received >= QUIET_SECONDS:
+                facts.append(f"⚠ quiet {span(now - received)}")
+        elif status != "completed":
+            facts.append(str(status))
+        count = item.get("toolCount", 0)
+        facts.append(f"{count} tool" + ("" if count == 1 else "s"))
+        # OMP's durationMs lags while a tool runs; for live rows wall time since first sight is truer.
+        facts.append(span(now - first if live else (item.get("durationMs") or 0) / 1000 or received - first))
+        label = f"⑂ {item['id']} ({item.get('agent', 'agent')})"
+        if item.get("description"):
+            label += f": {item['description']}"
+        return {"content": label + " — " + " · ".join(facts), "priority": "low",
+                "status": "completed" if not live else "in_progress" if status == "running" else "pending"}
+
+    def plan(self, sid, force=False):
+        entries = self.todos.get(sid, []) + [self.row(*value) for value in self.agents.get(sid, {}).values()]
+        if not force and entries == self.shown.get(sid):
+            return None
+        self.shown[sid] = entries
+        return {"jsonrpc": "2.0", "method": "session/update",
+                "params": {"sessionId": sid, "update": {"sessionUpdate": "plan", "entries": entries}}}
 
 
 def t3_choice_enums(message):
@@ -54,6 +151,8 @@ def main():
     connection_id = str(uuid.uuid4())
     worker_thread = None
     input_lock = threading.Lock()
+    board = SubagentBoard() if environment.get("T3_ACP_MCP_NODE") else None
+    board_lock = threading.Lock()
 
     def send(message):
         with input_lock:
@@ -97,6 +196,17 @@ def main():
         with output_lock:
             sys.stdout.buffer.write(json.dumps(message).encode() + b"\n")
             sys.stdout.buffer.flush()
+
+    def refresh():
+        while True:
+            time.sleep(TICK_SECONDS)
+            with board_lock:
+                plans = board.tick()
+            for plan in plans:
+                emit(plan)
+
+    if board:
+        threading.Thread(target=refresh, daemon=True).start()
 
     def present(proposal, replay=False):
         if proposal.get("state") != "needs_approval" or worker_context():
@@ -157,7 +267,8 @@ def main():
 
     def receive():
         for line in child.stdout:
-            # Preserve protocol bytes except equivalent T3 scalar choice enums.
+            # Preserve protocol bytes except equivalent T3 scalar choice enums and subagent plan rows.
+            merged = None
             try:
                 translated = json.loads(line)
                 if worker_thread and translated.get("method") == "elicitation/create":
@@ -171,11 +282,18 @@ def main():
                     continue
                 if environment.get("T3_ACP_MCP_NODE") and t3_choice_enums(translated):
                     line = json.dumps(translated).encode() + b"\n"
+                if board:
+                    with board_lock:
+                        merged = board.observe(translated)
+                    if merged and translated["params"]["update"]["sessionUpdate"] == "plan":
+                        line, merged = json.dumps(merged).encode() + b"\n", None
             except (ValueError, TypeError, AttributeError):
                 pass
             with output_lock:
                 sys.stdout.buffer.write(line)
                 sys.stdout.buffer.flush()
+            if merged:
+                emit(merged)
             try:
                 message = json.loads(line)
                 with lock:
@@ -224,6 +342,9 @@ def main():
                         pending[message["id"]] = params
                     if method == "session/prompt":
                         sid = params.get("sessionId", "unknown")
+                        if board:
+                            with board_lock:
+                                board.settle(sid)
                         text = "\n".join(item.get("text", "") for item in params.get("prompt", [])
                                          if item.get("type") == "text")
                         # T3 wraps user text in an envelope of host instructions.

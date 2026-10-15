@@ -110,13 +110,20 @@ def delegate(request):
     if not request["title"].startswith("[sub] ["):
         raise ValueError("worker title must start with [sub] [topic]")
     target, lane, reason = select(request, capabilities)
+    # Children get their own worktree (from the caller's local commit) unless told to share.
+    isolation = request.get("isolation", "worktree")
+    if isolation not in ("worktree", "shared"):
+        raise ValueError("isolation must be worktree or shared")
     record = {"callerThreadId": thread["threadId"], "clientRequestId": request["clientRequestId"],
-              "lane": lane, "reason": reason, "requested": target}
+              "lane": lane, "reason": reason, "requested": target, "isolation": isolation}
     audit({**record, "status": "requested"})
-    result = call("delegate_task", {"task": WORKER_RULES + "\n\n" + request["task"],
-                  "title": request["title"], "clientRequestId": request["clientRequestId"],
-                  "role": request.get("role", "general"), "target": target, "mode": "async",
-                  "runtimeMode": "inherit", "interactionMode": "default"})
+    arguments = {"task": WORKER_RULES + "\n\n" + request["task"],
+                 "title": request["title"], "clientRequestId": request["clientRequestId"],
+                 "role": request.get("role", "general"), "target": target, "mode": "async",
+                 "runtimeMode": "inherit", "interactionMode": "default"}
+    if isolation == "worktree":
+        arguments["isolation"] = "worktree"
+    result = call("delegate_task", arguments)
     resolved = {"providerInstanceId": result.get("providerInstanceId"), "model": result.get("model")}
     try:
         if any(resolved[key] != target[key] for key in resolved):
