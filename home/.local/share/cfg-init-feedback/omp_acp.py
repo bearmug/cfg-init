@@ -31,6 +31,9 @@ class SubagentBoard:
         self.todos = {}   # sessionId -> entries from OMP's todo plan
         self.agents = {}  # sessionId -> {(toolCallId, agentId): (progress, receivedAt)}
         self.shown = {}   # sessionId -> entries last sent to T3
+        # Sessions replaying history (session/load, session/resume until their response). Stored task
+        # results of background spawns hold the spawn-time "pending" snapshot, which would show as ghosts.
+        self.replaying = set()
 
     def observe(self, message):
         """Plan notification to send for this OMP message, or None. Plans always return a merged plan."""
@@ -47,7 +50,7 @@ class SubagentBoard:
         output = update.get("rawOutput")
         details = output.get("details") if isinstance(output, dict) else None
         progress = details.get("progress") if isinstance(details, dict) else None
-        if not isinstance(progress, list):
+        if not isinstance(progress, list) or sid in self.replaying:
             return None
         board = self.agents.setdefault(sid, {})
         now = self.clock()
@@ -303,6 +306,9 @@ def main():
                         sid = result.get("sessionId") or request.get("sessionId")
                         if sid:
                             sessions[sid] = request.get("cwd", os.getcwd())
+                        if board:
+                            with board_lock:
+                                board.replaying.discard(request.get("sessionId"))
                     if message.get("method") == "session/update":
                         params = message.get("params", {})
                         update = params.get("update", {})
@@ -340,6 +346,9 @@ def main():
                 with lock:
                     if method in ("session/new", "session/load", "session/resume") and "id" in message:
                         pending[message["id"]] = params
+                        if board and method != "session/new":
+                            with board_lock:
+                                board.replaying.add(params.get("sessionId"))
                     if method == "session/prompt":
                         sid = params.get("sessionId", "unknown")
                         if board:

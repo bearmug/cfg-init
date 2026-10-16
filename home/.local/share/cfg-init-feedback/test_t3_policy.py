@@ -167,6 +167,12 @@ class SubagentBoardTest(unittest.TestCase):
         stale = self.entries(self.board.observe(subagent_update("pending")))[1]
         self.assertEqual(stale["status"], "in_progress", "late spawn snapshot must not demote a running row")
 
+    def test_replayed_history_adds_no_ghost_rows(self):
+        self.board.replaying.add("s")
+        self.assertIsNone(self.board.observe(subagent_update("pending")))
+        self.board.replaying.discard("s")
+        self.assertEqual(len(self.entries(self.board.plan("s", force=True))), 1)
+
     def test_new_prompt_drops_finished_subagents_only(self):
         self.board.observe(subagent_update("completed", tool_count=5))
         self.assertEqual(self.entries(self.board.plan("s", force=True))[1]["status"], "completed")
