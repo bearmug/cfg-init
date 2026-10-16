@@ -23,17 +23,35 @@ def span(seconds):
     return f"{minutes}m" if minutes < 60 else f"{minutes // 60}h{minutes % 60:02d}m"
 
 
+LIVE = ("pending", "running")
+
+
 class SubagentBoard:
-    """Append live OMP subagent rows, read from `task` tool progress, to the ACP plan T3 renders."""
+    """Append live OMP subagent rows to the ACP plan T3 renders.
+
+    Rows start from `task` tool progress in the ACP stream (which carries the sessionId). OMP stops
+    forwarding that progress once the parent turn ends, so the t3-coordinator extension also feeds
+    OMP's in-process subagent event bus (`feed`), which keeps reporting background agents."""
 
     def __init__(self, clock=time.time):
         self.clock = clock
         self.todos = {}   # sessionId -> entries from OMP's todo plan
-        self.agents = {}  # sessionId -> {(toolCallId, agentId): (progress, receivedAt)}
+        self.agents = {}  # sessionId -> {(toolCallId, agentId): (progress, receivedAt, firstSeenAt)}
         self.shown = {}   # sessionId -> entries last sent to T3
+        self.fed = set()  # rows the event bus updates; the ACP stream only creates them
         # Sessions replaying history (session/load, session/resume until their response). Stored task
         # results of background spawns hold the spawn-time "pending" snapshot, which would show as ghosts.
         self.replaying = set()
+
+    def merge(self, board, key, item):
+        now = self.clock()
+        previous, _, first = board.get(key, (None, now, now))
+        if previous and previous.get("status") not in LIVE:
+            return  # finished rows never revive from a late snapshot
+        # OMP interleaves a stale spawn-time "pending" snapshot after "running".
+        if previous and previous.get("status") == "running" and item.get("status") == "pending":
+            item = {**item, "status": "running"}
+        board[key] = (item, now, first)
 
     def observe(self, message):
         """Plan notification to send for this OMP message, or None. Plans always return a merged plan."""
@@ -53,33 +71,47 @@ class SubagentBoard:
         if not isinstance(progress, list) or sid in self.replaying:
             return None
         board = self.agents.setdefault(sid, {})
-        now = self.clock()
         for item in progress:
             if isinstance(item, dict) and isinstance(item.get("id"), str):
                 key = (update.get("toolCallId"), item["id"])
-                previous, _, first = board.get(key, (None, now, now))
-                # OMP interleaves a stale spawn-time "pending" snapshot after "running".
-                if previous and previous.get("status") == "running" and item.get("status") == "pending":
-                    item = {**item, "status": "running"}
-                board[key] = (item, now, first)
+                if key not in self.fed:
+                    self.merge(board, key, item)
+        return self.plan(sid)
+
+    def feed(self, event):
+        """Apply one event-bus record from the extension; plan to send, or None for unknown rows."""
+        progress = event.get("progress") if isinstance(event.get("progress"), dict) else {}
+        key = (event.get("parentToolCallId"), progress.get("id") or event.get("id"))
+        sid = next((sid for sid, board in self.agents.items() if key in board), None)
+        if sid is None:
+            return None
+        board = self.agents[sid]
+        if event.get("kind") == "progress":
+            self.merge(board, key, progress)
+        elif event.get("kind") == "lifecycle" and event.get("status") in ("completed", "failed", "aborted"):
+            self.merge(board, key, {**board[key][0], "status": event["status"]})
+        else:
+            return None
+        self.fed.add(key)
         return self.plan(sid)
 
     def settle(self, sid):
         """New user prompt: forget finished subagents; running ones stay listed."""
         board = self.agents.get(sid, {})
-        for key in [key for key, (item, _, _) in board.items() if item.get("status") not in ("pending", "running")]:
+        for key in [key for key, (item, _, _) in board.items() if item.get("status") not in LIVE]:
             del board[key]
+            self.fed.discard(key)
 
     def tick(self):
         """Refreshed plans for sessions with live subagents (elapsed time, quiet warnings)."""
         live = [sid for sid, board in self.agents.items()
-                if any(item.get("status") in ("pending", "running") for item, _, _ in board.values())]
+                if any(item.get("status") in LIVE for item, _, _ in board.values())]
         return [plan for plan in (self.plan(sid) for sid in live) if plan]
 
     def row(self, item, received, first):
         now = self.clock()
         status = item.get("status")
-        live = status in ("pending", "running")
+        live = status in LIVE
         facts = []
         if live:
             tool, started = item.get("currentTool"), item.get("currentToolStartMs")
@@ -141,9 +173,16 @@ def main():
     if sys.argv[1:] != ["acp"]:
         os.execv(real_omp, [real_omp, *sys.argv[1:]])
     args = [real_omp, "acp"]
+    feed_fd, child_environment = None, environment
     if environment.get("T3_ACP_MCP_NODE"):
         args += ["--config", str(Path.home() / ".omp/agent/t3.yml")]
-    child = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=environment)
+        # t3-coordinator.ts writes OMP's subagent event bus here as JSON lines. Only OMP gets the fd.
+        feed_fd, feed_writer = os.pipe()
+        child_environment = {**environment, "CFG_INIT_SUBAGENT_FD": str(feed_writer)}
+    child = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, env=child_environment,
+                             pass_fds=() if feed_fd is None else (feed_writer,))
+    if feed_fd is not None:
+        os.close(feed_writer)
     pending = {}
     sessions = {}
     last_response = {}
@@ -154,7 +193,7 @@ def main():
     connection_id = str(uuid.uuid4())
     worker_thread = None
     input_lock = threading.Lock()
-    board = SubagentBoard() if environment.get("T3_ACP_MCP_NODE") else None
+    board = SubagentBoard() if feed_fd is not None else None
     board_lock = threading.Lock()
 
     def send(message):
@@ -208,8 +247,21 @@ def main():
             for plan in plans:
                 emit(plan)
 
+    def subscribe():
+        with os.fdopen(feed_fd, "rb") as stream:
+            for line in stream:
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                with board_lock:
+                    plan = board.feed(event) if isinstance(event, dict) else None
+                if plan:
+                    emit(plan)
+
     if board:
         threading.Thread(target=refresh, daemon=True).start()
+        threading.Thread(target=subscribe, daemon=True).start()
 
     def present(proposal, replay=False):
         if proposal.get("state") != "needs_approval" or worker_context():

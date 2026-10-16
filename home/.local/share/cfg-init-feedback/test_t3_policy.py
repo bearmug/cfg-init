@@ -173,6 +173,21 @@ class SubagentBoardTest(unittest.TestCase):
         self.board.replaying.discard("s")
         self.assertEqual(len(self.entries(self.board.plan("s", force=True))), 1)
 
+    def test_event_bus_keeps_background_rows_current_after_the_turn(self):
+        self.board.observe(subagent_update("pending"))  # spawn snapshot: the last ACP progress for this agent
+        self.assertIsNone(self.board.feed({"kind": "progress", "parentToolCallId": "elsewhere",
+                                           "progress": {"id": "Judge", "status": "running"}}))
+        plan = self.board.feed({"kind": "progress", "parentToolCallId": "call", "progress": {
+            "id": "Judge", "agent": "easy-haiku", "status": "running", "currentTool": "bash", "toolCount": 4}})
+        self.assertIn("bash · 4 tools", self.entries(plan)[1]["content"])
+        # Once the bus owns a row, stale ACP snapshots no longer overwrite it.
+        self.assertIsNone(self.board.observe(subagent_update("pending")))
+        done = self.board.feed({"kind": "lifecycle", "parentToolCallId": "call", "id": "Judge", "status": "completed"})
+        self.assertEqual(self.entries(done)[1]["status"], "completed")
+        self.assertEqual(self.board.tick(), [])
+        self.assertIsNone(self.board.feed({"kind": "progress", "parentToolCallId": "call",
+                                           "progress": {"id": "Judge", "status": "running"}}))
+
     def test_new_prompt_drops_finished_subagents_only(self):
         self.board.observe(subagent_update("completed", tool_count=5))
         self.assertEqual(self.entries(self.board.plan("s", force=True))[1]["status"], "completed")
