@@ -63,7 +63,18 @@ fi
 if [ -x "$HOME/.local/bin/omp-feedback" ]; then
 	ok "t3: launcher ~/.local/bin/omp-feedback"
 	drift t3 .local/share/cfg-init-feedback/omp_acp.py .local/share/cfg-init-feedback/t3_policy.py \
-		.omp/agent/extensions/t3-coordinator.ts .omp/agent/t3.yml
+		.local/share/cfg-init-feedback/quota.py .omp/agent/extensions/t3-coordinator.ts .omp/agent/t3.yml
+	# Quota reserve from the cached `omp usage` reading (no network); never a failure.
+	if installed .local/share/cfg-init-feedback/quota.py; then
+		while IFS= read -r line; do
+			case "$line" in
+			ok\ *) ok "${line#ok }" ;;
+			?*) w "${line#warn }" ;;
+			esac
+		done <<EOF
+$(python3 "$HOME/.local/share/cfg-init-feedback/quota.py" --check 2>/dev/null || echo "warn quota: quota.py --check failed")
+EOF
+	fi
 else
 	w "t3: omp-feedback launcher not installed"
 fi

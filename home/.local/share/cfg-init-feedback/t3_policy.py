@@ -7,6 +7,9 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import quota  # noqa: E402 - sibling module, installed next to this file
+
 # Tier lanes mirror the native omp tier agents (~/.omp/agent/agents/<tier>.md).
 TIERS = {
     "easy-luna": "openai-codex/gpt-6-luna",
@@ -116,6 +119,12 @@ def delegate(request):
         raise ValueError("isolation must be worktree or shared")
     record = {"callerThreadId": thread["threadId"], "clientRequestId": request["clientRequestId"],
               "lane": lane, "reason": reason, "requested": target, "isolation": isolation}
+    # Quota reserve: refuse (never switch) when the lane's subscription is at its reserve.
+    try:
+        record["quota"] = quota.gate(lane, target["model"], TIERS, request.get("quotaOverride"))
+    except quota.QuotaAvoid as error:
+        audit({**record, "status": "refused-quota", "quota": error.advice})
+        raise
     audit({**record, "status": "requested"})
     arguments = {"task": WORKER_RULES + "\n\n" + request["task"],
                  "title": request["title"], "clientRequestId": request["clientRequestId"],
@@ -145,7 +154,7 @@ def delegate(request):
         raise
     audit({**record, "status": "launched", "resolved": selection,
            "taskId": result["taskId"], "childThreadId": result["childThreadId"]})
-    return result
+    return {**result, "quota": record["quota"]}
 
 
 def main():

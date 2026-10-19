@@ -30,7 +30,7 @@ jobs:
         run: python3 -m unittest -v test_feedback.py
       - name: T3 policy tests
         working-directory: home/.local/share/cfg-init-feedback
-        run: python3 -m unittest -v test_t3_policy.py
+        run: python3 -m unittest -v test_t3_policy.py test_quota.py
       - uses: oven-sh/setup-bun@v2
       - name: OMP extension tests
         run: bun test tests/
