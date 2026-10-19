@@ -1,0 +1,60 @@
+{
+  "generatedAt": 1790000000000,
+  "reports": [
+    {
+      "provider": "openai-codex",
+      "fetchedAt": 1790000000000,
+      "limits": [
+        {
+          "id": "openai-codex:primary",
+          "label": "7 days",
+          "scope": {"provider": "openai-codex", "windowId": "7d", "shared": true},
+          "window": {"id": "7d", "label": "7 days", "durationMs": 604800000, "resetsAt": 1790259200000},
+          "amount": {"used": 40, "limit": 100, "remaining": 60, "usedFraction": 0.4, "remainingFraction": 0.6, "unit": "percent"},
+          "status": "ok"
+        }
+      ],
+      "resetCredits": {"availableCount": 0},
+      "metadata": {"planType": "plan", "allowed": true, "limitReached": false, "email": "redacted-email",
+                   "accountId": "redacted-id", "meterStates": {"chat": {"allowed": true, "limitReached": false}},
+                   "orgId": "redacted-org", "orgName": "redacted-org-name"}
+    },
+    {
+      "provider": "anthropic",
+      "fetchedAt": 1790000000000,
+      "limits": [
+        {
+          "id": "anthropic:5h",
+          "label": "Claude 5 Hour",
+          "scope": {"provider": "anthropic", "windowId": "5h", "shared": true},
+          "window": {"id": "5h", "label": "5 Hour", "durationMs": 18000000, "resetsAt": 1790007200000},
+          "amount": {"used": 25, "limit": 100, "remaining": 75, "usedFraction": 0.25, "remainingFraction": 0.75, "unit": "percent"},
+          "status": "ok"
+        },
+        {
+          "id": "anthropic:7d",
+          "label": "Claude 7 Day",
+          "scope": {"provider": "anthropic", "windowId": "7d", "shared": true},
+          "window": {"id": "7d", "label": "7 Day", "durationMs": 604800000, "resetsAt": 1790432000000},
+          "amount": {"used": 10, "limit": 100, "remaining": 90, "usedFraction": 0.1, "remainingFraction": 0.9, "unit": "percent"},
+          "status": "ok"
+        }
+      ],
+      "metadata": {"endpoint": "https://example.invalid/usage", "accountId": "redacted-id", "email": "redacted-email",
+                   "orgId": "redacted-org", "orgName": "redacted-org-name"},
+      "resetCredits": {"availableCount": 1, "redeemableCount": 1, "nextCreditId": "redacted-credit",
+                       "credits": [{"id": "redacted-credit", "title": "redacted", "status": "available"}]}
+    }
+  ],
+  "accountsWithoutUsage": [],
+  "disabledCredentials": [],
+  "capacity": {
+    "openai-codex": [
+      {"window": "7d", "durationMs": 604800000, "meter": "chat", "accounts": 1, "usedAccounts": 0.4, "remainingAccounts": 0.6}
+    ],
+    "anthropic": [
+      {"window": "5h", "durationMs": 18000000, "accounts": 1, "usedAccounts": 0.25, "remainingAccounts": 0.75},
+      {"window": "7d", "durationMs": 604800000, "accounts": 1, "usedAccounts": 0.1, "remainingAccounts": 0.9}
+    ]
+  }
+}

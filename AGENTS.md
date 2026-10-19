@@ -32,5 +32,5 @@ they are.
   ```sh
   for f in install.sh lib/*.sh components/*.sh; do bash -n "$f"; done
   (cd home/.agents/skills/dissatisfaction && python3 -m unittest test_feedback)
-  (cd home/.local/share/cfg-init-feedback && python3 -m unittest test_t3_policy)
+  (cd home/.local/share/cfg-init-feedback && python3 -m unittest test_t3_policy test_quota)
   ```

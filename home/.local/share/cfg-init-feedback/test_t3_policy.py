@@ -8,7 +8,8 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import t3_policy as policy
+os.environ["T3_QUOTA"] = "off"  # Never read real `omp usage` here; see test_quota.py.
+import t3_policy as policy  # noqa: E402
 
 SOL = policy.TIERS[policy.DEFAULT_LANE]
 LUNA = policy.TIERS["easy-luna"]

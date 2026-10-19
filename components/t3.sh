@@ -1,10 +1,10 @@
-# about: T3 Code: OMP ACP relay (omp-feedback), Sol/Luna delegation helper, worker guards
+# about: T3 Code: OMP ACP relay (omp-feedback), tier delegation helper with quota reserve, worker guards
 . "$(dirname -- "$0")/../lib/cfg.sh"
 
 need python3
 need omp "run the packages component first"
 [ -f "$HOME/.agents/skills/dissatisfaction/feedback.py" ] || die "install the feedback component first (the relay submits prompts to it)"
-for file in omp_acp.py t3_policy.py; do
+for file in omp_acp.py t3_policy.py quota.py; do
 	put ".local/share/cfg-init-feedback/$file"
 done
 put .omp/agent/extensions/t3-coordinator.ts

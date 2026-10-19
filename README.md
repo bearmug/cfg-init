@@ -54,6 +54,22 @@ which run inside the coordinator thread and are mirrored as `todo` items. The OM
 and native subagents are workers. Children return `BLOCKED` instead of asking the user. These
 guards are cooperative, not a sandbox.
 
+**Quota.** `python3 ~/.local/share/cfg-init-feedback/quota.py` turns a cached `omp usage --json --redact`
+reading into per-lane advice: `ok`, `reduce`, `avoid` or `unknown`, with the tightest window, its
+reset and the reading's age. The T3 helper refuses `avoid` lanes and names the same-tier sibling
+instead of switching silently; `./install.sh check` reports the cached state as `warn`, never
+`FAIL`. The cache refreshes on use, so no timer is installed. It keeps only window numbers, no
+account metadata. Environment knobs:
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `T3_QUOTA` | `enforce` | `advise` only annotates; `off` skips the check |
+| `T3_QUOTA_BUFFER` | `0.15` | reserve kept in every window; at or below it is `avoid` |
+| `T3_QUOTA_MARGIN` | `0.15` | `reduce` band above the reserve (also when pace projects past it) |
+| `T3_QUOTA_TTL` / `_TTL_TIGHT` | `600` / `180` s | reuse a reading; shorter near the reserve |
+| `T3_QUOTA_STALE` | `1800` s | older readings count as `unknown` |
+| `T3_QUOTA_RETRY` / `_TIMEOUT` | `120` / `8` s | back-off after a failed `omp usage`; its timeout |
+
 **Feedback.** Every prompt is scored locally (Qwen3-1.7B on `127.0.0.1:8086`). Prompts above the
 threshold go to a tool-free OMP screening agent, so those prompts reach that model's provider.
 Concrete improvements come back as Yes/No proposals. Approved work runs in a separate git worktree
