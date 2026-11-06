@@ -84,3 +84,7 @@ install.sh        entrypoint          lib/cfg.sh, lib/cfg.py   shared helpers
 components/*.sh   one per component   lib/check.sh             `install.sh check`
 home/             payloads, mirrored to $HOME
 ```
+
+## Grok Bot
+
+Coordinator practices that keep Grok Bot usage predictable — short chats, quiet routines, webhook completions, and file-based coordination — live in [home/.agents/skills/grok-bot-coordinator/SKILL.md](home/.agents/skills/grok-bot-coordinator/SKILL.md). Copy that skill into a Grok Bot skill library; `./install.sh` does not install it.
