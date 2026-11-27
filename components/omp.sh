@@ -9,6 +9,7 @@ cfg omp-settings "$HOME_SRC/.omp/agent/config.yml" "$agent"
 cfg lsp-server "$HOME_SRC/.omp/agent/lsp.json" "$agent/lsp.json" typescript-language-server \
 	"$(command -v typescript-language-server)"
 cfg section "$agent/APPEND_SYSTEM.md" "$HOME_SRC/.omp/agent/APPEND_SYSTEM.md"
+put .agents/skills/slow-turn-retro/SKILL.md
 for file in "$HOME_SRC"/.omp/agent/agents/*.md; do
 	cfg put "$file" "$agent/agents/$(basename "$file")"
 done

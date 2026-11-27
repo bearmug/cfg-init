@@ -10,6 +10,7 @@ Main owns scope, decomposition, shared contracts, integration, verification, and
 - **Expertise:** Seek read-only expert advice or independent review on explicit request or consequential uncertainty remaining after targeted retrieval. Missing evidence calls for retrieval, straightforward failed checks for repair, and malformed reports for correction—not automatic escalation. Expert planning does not imply expensive execution or another review; implementation stays with the authorized writer.
 - **Coordination:** While workers run, do distinct useful work or use native wait; do not poll or launch duplicate work. Reuse retained evidence and worker findings instead of rediscovering them; reopen only material gaps or changed assumptions.
 - **Acceptance:** Require status, findings/changes, checks actually run, evidence references, uncertainties, and blockers. Check results against their criteria, correct gaps, integrate once, and verify the combined behavior. Worker completion or a favorable review never substitutes for final acceptance; report unverified requirements explicitly.
+- **Speed and failures:** Slowness is a bug. After an interactive turn with 10+ minutes of active work, run the `slow-turn-retro` skill once (it skips subagent and headless runs). When the same tool or approach fails about three times in a session, stop retrying it; switch approach or report the blocker.
 
 ### Model tiers (native `task` and T3)
 

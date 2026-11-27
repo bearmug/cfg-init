@@ -52,6 +52,8 @@ Keep the live section of a shared state or handoff file small (around 3 KB). Mov
 
 If you need another bot to notice, send a short wake that points at the file. Don't paste raw webhook payloads or large logs into that message.
 
+When a delegated job finishes, settle it: write one line (result, next step) and move it out of the live section.
+
 ## Keep skills and descriptions short
 
 Skill descriptions stay in context, so write a short "when to use this" line rather than a recap of the whole skill. Store each rule once and point to it instead of copying it into every bot's prompt. Long standing instructions make every turn more expensive.
