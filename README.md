@@ -77,6 +77,8 @@ and is never merged automatically. Run `/feedback` to see pending items. Configu
 `~/.config/cfg-init-feedback/config.json`; the skill's details are in
 [SKILL.md](home/.agents/skills/dissatisfaction/SKILL.md).
 
+**Slow-turn retro.** After an interactive turn with 10+ minutes of active work, the agent fixes recurring slowness in the default path, timeboxed to a few minutes. The `omp` component installs the [skill](home/.agents/skills/slow-turn-retro/SKILL.md); the delegation policy points to it.
+
 ## Layout
 
 ```
